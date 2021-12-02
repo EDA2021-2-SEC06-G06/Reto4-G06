@@ -11,10 +11,6 @@ import model
 import csv
 
 
-"""
-El controlador se encarga de mediar entre la vista y el modelo.
-"""
-
 # ==============================================
 # Inicialización del analizador
 # ==============================================
@@ -32,10 +28,11 @@ def initAnalyzer():
 def loadData(analyzer):
     loadAirports(analyzer)
     loadRoutes(analyzer)
+    loadCities(analyzer)
 
 
 def loadAirports(analyzer):
-    airports_file = cf.data_dir + "airports_full.csv"
+    airports_file = cf.data_dir + "airports_test.csv"
     input_file = csv.DictReader(open(airports_file, encoding='utf-8'))
 
     for airport in input_file:
@@ -43,14 +40,32 @@ def loadAirports(analyzer):
 
 
 def loadRoutes(analyzer):
-    routes_file = cf.data_dir + "routes_full.csv"
+    routes_file = cf.data_dir + "routes_test.csv"
     input_file = csv.DictReader(open(routes_file, encoding='utf-8'))
 
     for route in input_file:
         model.AddRoute(analyzer, route)
 
 
+def loadCities(analyzer):
+    cities_file = cf.data_dir + "worldcities.csv"
+    input_file = csv.DictReader(open(cities_file, encoding='utf-8'))
 
+    for city in input_file:
+        model.AddCity(analyzer, city)
+
+
+# ==============================================
 # Funciones de ordenamiento
+# ==============================================
 
-# Funciones de consulta sobre el catálogo
+
+# ==============================================
+# Funciones de consulta sobre el analizador
+# ==============================================
+
+def homonymsREQ4(analyzer, city1, city2):
+    return model.homonymsREQ4(analyzer, city1, city2)
+
+def REQ4(analyzer, origin, destination):
+    print("\n\nRequerimiento en elaboración...")

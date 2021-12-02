@@ -11,15 +11,11 @@ import sys
 import controller
 from time import process_time
 from DISClib.ADT import list as lt
+from DISClib.ADT import map as mp
+from DISClib.DataStructures import mapentry as me
+from DISClib.ADT import graph as gr
 assert cf
 
-
-"""
-La vista se encarga de la interacción con el usuario
-Presenta el menu de opciones y por cada seleccion
-se hace la solicitud al controlador para ejecutar la
-operación solicitada
-"""
 
 def printMenu():
     print("\n\n-----------------------------------------")
@@ -37,6 +33,7 @@ def printMenu():
     print("-----------------------------------------")
     print("0- Salir\n")
 
+
 def initAnalyzer():
     """
     Inicializa el catálogo
@@ -51,23 +48,63 @@ def loadData(analyzer):
     controller.loadData(analyzer)
 
 
+def chooseHomonymsREQ4(homonyms_map, city1, city2):
+    origin_homonyms = me.getValue(mp.get(homonyms_map, "origin"))
+    destination_homonyms = me.getValue(mp.get(homonyms_map, "destination"))
+    origin = lt.getElement(origin_homonyms, 1)
+    destination = lt.getElement(destination_homonyms, 1)
+
+    if lt.size(origin_homonyms)>1:
+        origin_homonyms_size = lt.size(origin_homonyms)
+        print("\n\n---------------------------------------------------------------------------------------------------------")
+        print("Se encontraron " + str(origin_homonyms_size) + " ciudades llamadas " + city1 + ". A continuación, la información de cada una:")
+        print()
+        opcion = 1
+
+        while opcion <= origin_homonyms_size:
+            city = lt.getElement(origin_homonyms, opcion)
+            print("Opción " + str(opcion) + ": ", city)
+            opcion += 1
+
+        origin_choice = int(input("\nIngrese la opción de la ciudad que desea consultar: "))
+        origin = lt.getElement(origin_homonyms, origin_choice)
+
+    if lt.size(destination_homonyms)>1:
+        destination_homonyms_size = lt.size(destination_homonyms)
+        print("\n\n---------------------------------------------------------------------------------------------------------")
+        print("Se encontraron " + str(destination_homonyms_size) + " ciudades llamadas " + city2 + ". A continuación, la información de cada una:")
+        print()
+        opcion = 1
+
+        while opcion <= destination_homonyms_size:
+            city = lt.getElement(destination_homonyms, opcion)
+            print("Opción " + str(opcion) + ": ", city)
+            opcion += 1
+
+        destination_choice = int(input("\nIngrese la opción de la ciudad que desea consultar: "))
+        destination = lt.getElement(destination_homonyms, destination_choice)
+
+    return origin, destination
+
+
 while True:
     printMenu()
     inputs = input('Seleccione una opción para continuar\n')
+    print()
 
 
     #Carga de datos
     if int(inputs) == 1:
-        print("\nCargando información de los archivos ....")
+        print("Cargando información de los archivos ....")
         analyzer = initAnalyzer()
 
         start_time = process_time()
         loadData(analyzer)
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
-
+        
         print("\nTiempo de carga: " + str(running_time) + " milisegundos")
-
+        
         #DAR ESPECIFICACIONES SOBRE LA CARGA DE DATOS (# de aeropuertos en cada grafo, etc.)
 
 
@@ -114,12 +151,18 @@ while True:
     #Requerimiento 4
     elif int(inputs) == 40:
 
+        city1 = input("Ingrese el nombre de la ciudad de origen: ")
+        city2 = input("Ingrese el nombre de la ciudad de destino: ")
+
+        homonyms_map = controller.homonymsREQ4(analyzer, city1, city2)
+        origin,destination = chooseHomonymsREQ4(homonyms_map, city1, city2)
+        
         start_time = process_time()
-        #req4 = controller.REQ4(catalog)
+        req4 = controller.REQ4(analyzer, origin, destination)
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
 
-        print("\n\n=============== Requerimiento Número 4 ===============")
+        #print("\n\n=============== Requerimiento Número 4 ===============")
         #print("Tiempo de ejecución: " + str(running_time) + " milisegundos\n")
 
 
@@ -139,5 +182,6 @@ while True:
 
     else:
         sys.exit(0)
+
 
 sys.exit(0)
