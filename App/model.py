@@ -130,7 +130,7 @@ def cityData(city):
 
 
 # Funciones de consulta
-def homonymsREQ4(analyzer, city1, city2):
+def homonymsREQ3(analyzer, city1, city2):
     CitiesMap = analyzer["CitiesMap"]
     origin_homonyms = me.getValue(mp.get(CitiesMap, city1))
     destination_homonyms = me.getValue(mp.get(CitiesMap, city2))

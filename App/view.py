@@ -48,7 +48,7 @@ def loadData(analyzer):
     controller.loadData(analyzer)
 
 
-def chooseHomonymsREQ4(homonyms_map, city1, city2):
+def chooseHomonymsREQ3(homonyms_map, city1, city2):
     origin_homonyms = me.getValue(mp.get(homonyms_map, "origin"))
     destination_homonyms = me.getValue(mp.get(homonyms_map, "destination"))
     origin = lt.getElement(origin_homonyms, 1)
@@ -138,32 +138,33 @@ while True:
     #Requerimiento 3
     elif int(inputs) == 30:
 
+        city1 = input("Ingrese el nombre de la ciudad de origen: ")
+        city2 = input("Ingrese el nombre de la ciudad de destino: ")
+
+        homonyms_map = controller.homonymsREQ3(analyzer, city1, city2)
+        origin,destination = chooseHomonymsREQ3(homonyms_map, city1, city2)
+        
         start_time = process_time()
-        #req3 = controller.REQ3(catalog)
+        req4 = controller.REQ3(analyzer, origin, destination)
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
 
-        print("\n\n=============== Requerimiento Número 3 ===============")
-        #print("Tiempo de ejecución: " + str(running_time) + " milisegundos")
+        #print("\n\n=============== Requerimiento Número 3 ===============")
+        #print("Tiempo de ejecución: " + str(running_time) + " milisegundos\n")
 
 
 
     #Requerimiento 4
     elif int(inputs) == 40:
 
-        city1 = input("Ingrese el nombre de la ciudad de origen: ")
-        city2 = input("Ingrese el nombre de la ciudad de destino: ")
-
-        homonyms_map = controller.homonymsREQ4(analyzer, city1, city2)
-        origin,destination = chooseHomonymsREQ4(homonyms_map, city1, city2)
-        
         start_time = process_time()
-        req4 = controller.REQ4(analyzer, origin, destination)
+        #req3 = controller.REQ4(catalog)
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
 
-        #print("\n\n=============== Requerimiento Número 4 ===============")
-        #print("Tiempo de ejecución: " + str(running_time) + " milisegundos\n")
+        print("\n\n=============== Requerimiento Número 4 ===============")
+        #print("Tiempo de ejecución: " + str(running_time) + " milisegundos")
+    
 
 
 

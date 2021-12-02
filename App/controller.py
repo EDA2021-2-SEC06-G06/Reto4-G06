@@ -64,8 +64,8 @@ def loadCities(analyzer):
 # Funciones de consulta sobre el analizador
 # ==============================================
 
-def homonymsREQ4(analyzer, city1, city2):
-    return model.homonymsREQ4(analyzer, city1, city2)
+def homonymsREQ3(analyzer, city1, city2):
+    return model.homonymsREQ3(analyzer, city1, city2)
 
-def REQ4(analyzer, origin, destination):
+def REQ3(analyzer, origin, destination):
     print("\n\nRequerimiento en elaboración...")
