@@ -8,6 +8,7 @@ Daniel Hernández Pineda
 
 
 import config as cf
+from DISClib.Utils import error as error
 from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
 from DISClib.ADT import graph as gr
@@ -49,6 +50,29 @@ def newAnalyzer():
 # Funciones para agregar informacion al catalogo
 def AddAirport(analyzer, airport):
     """
+    Se añade cada aeropuerto al mapa de aeropuertos y a los grafos
+    """
+    addAirportToMap(analyzer, airport)
+    addAirportToMainGraph(analyzer, airport)
+
+
+def AddRoute(analyzer, route):
+    """
+    Se añade la ruta como un arco entre sus aeropuertos correspondientes
+    """    
+    MainGraph = analyzer["MainGraph"]
+    origin = route["Departure"]
+    destination = route["Destination"]
+    distance = float(route["distance_km"])
+
+    edge = gr.getEdge(MainGraph, origin, destination)
+    if edge is None:
+        gr.addEdge(MainGraph, origin, destination, distance)
+
+
+# Funciones para creacion de datos
+def addAirportToMap(analyzer, airport):
+    """
     Se añaden los aeropuertos a un mapa según su código IATA
     """
     AirportsMap = analyzer["AirportsMap"]
@@ -63,8 +87,14 @@ def AddAirport(analyzer, airport):
     mp.put(AirportsMap, airport["IATA"], airport_info)
 
 
+def addAirportToMainGraph(analyzer, airport):
+    """
+    Se añaden los códigos IATA de los aeropuertos como vértices del grafo principal
+    """
+    MainGraph = analyzer["MainGraph"]
+    iata_code = airport["IATA"]
+    gr.insertVertex(MainGraph, iata_code)
 
-# Funciones para creacion de datos
 
 # Funciones de consulta
 

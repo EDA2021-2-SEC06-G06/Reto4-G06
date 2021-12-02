@@ -9,7 +9,6 @@ Daniel Hernández Pineda
 import config as cf
 import sys
 import controller
-from datetime import datetime, date
 from time import process_time
 from DISClib.ADT import list as lt
 assert cf
@@ -56,6 +55,7 @@ while True:
     printMenu()
     inputs = input('Seleccione una opción para continuar\n')
 
+
     #Carga de datos
     if int(inputs) == 1:
         print("\nCargando información de los archivos ....")
@@ -67,6 +67,9 @@ while True:
         running_time = (stop_time - start_time)*1000
 
         print("\nTiempo de carga: " + str(running_time) + " milisegundos")
+
+        #DAR ESPECIFICACIONES SOBRE LA CARGA DE DATOS (# de aeropuertos en cada grafo, etc.)
+
 
 
     #Requerimiento 1
