@@ -48,6 +48,7 @@ def loadRoutes(analyzer):
 
     for route in input_file:
         model.AddRoute(analyzer, route)
+        model.AddRouteND(analyzer, route)
 
 
 
