@@ -41,11 +41,11 @@ def initAnalyzer():
     return controller.initAnalyzer()
 
 
-def loadData(analyzer):
+def loadData(analyzer, file_size):
     """
     Carga las obras en la estructura de datos
     """
-    controller.loadData(analyzer)
+    controller.loadData(analyzer, file_size)
 
 
 def chooseHomonymsREQ3(homonyms_map, city1, city2):
@@ -95,17 +95,31 @@ while True:
 
     #Carga de datos
     if int(inputs) == 1:
+        #file_size = input("Ingrese el sufijo del archivo que desea utilizar (small, large, 10pct...): ")
+        file_size = "large"
+
         print("Cargando información de los archivos ....")
         analyzer = initAnalyzer()
 
         start_time = process_time()
-        loadData(analyzer)
+        loadData(analyzer, file_size)
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
         
         print("\nTiempo de carga: " + str(running_time) + " milisegundos")
         
         #DAR ESPECIFICACIONES SOBRE LA CARGA DE DATOS (# de aeropuertos en cada grafo, etc.)
+        print("\n===Digrafo de aeropuertos y rutas===")
+        num_airports1 = gr.numVertices(analyzer["MainGraph"])
+        num_routes1 = gr.numEdges(analyzer["MainGraph"])
+        print("Número de aeropuertos: " + str(num_airports1))
+        print("Número de rutas: " + str(num_routes1))
+
+        print("\n===Grafo no dirigido de aeropuertos y rutas===")
+        num_airports2 = gr.numVertices(analyzer["SecondaryGraph"])
+        num_routes2 = gr.numEdges(analyzer["SecondaryGraph"])
+        print("Número de aeropuertos: " + str(num_airports2))
+        print("Número de rutas: " + str(num_routes2))
 
 
 
@@ -165,7 +179,6 @@ while True:
         print("\n\n=============== Requerimiento Número 4 ===============")
         #print("Tiempo de ejecución: " + str(running_time) + " milisegundos")
     
-
 
 
     #Requerimiento 5

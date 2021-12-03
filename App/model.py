@@ -14,7 +14,8 @@ from DISClib.ADT import map as mp
 from DISClib.DataStructures import mapentry as me
 from DISClib.ADT import graph as gr
 from DISClib.Algorithms.Graphs import dfo
-from DISClib.Algorithms.Graphs import dfs as dfs
+from DISClib.Algorithms.Graphs import dfs
+from DISClib.Algorithms.Graphs import scc
 assert cf
 
 
@@ -28,6 +29,7 @@ def newAnalyzer():
     analyzer = {"MainGraph": None,
                "SecondaryGraph": None,
                "AirportsMap": None,
+               "RoutesMap": None,
                "CitiesMap": None} 
 
     analyzer["MainGraph"] = gr.newGraph(datastructure='ADJ_LIST',
@@ -44,6 +46,10 @@ def newAnalyzer():
                                         maptype='PROBING',
                                         loadfactor=0.5)
 
+    analyzer["RoutesMap"] = mp.newMap(10,
+                                      maptype='PROBING',
+                                      loadfactor=0.5)
+    
     analyzer["CitiesMap"] = mp.newMap(40000,
                                       maptype='PROBING',
                                       loadfactor=0.5)
@@ -59,18 +65,13 @@ def AddAirport(analyzer, airport):
     addAirportToMap(analyzer, airport)
     addAirportToMainGraph(analyzer, airport)
 
+
 def AddRoute(analyzer, route):
     """
-    Se añade la ruta como un arco entre sus aeropuertos correspondientes
-    """    
-    MainGraph = analyzer["MainGraph"]
-    origin = route["Departure"]
-    destination = route["Destination"]
-    distance = float(route["distance_km"])
-
-    edge = gr.getEdge(MainGraph, origin, destination)
-    if edge is None:
-        gr.addEdge(MainGraph, origin, destination, distance)
+    Se añade cada aeropuerto al mapa de aeropuertos y a los grafos
+    """
+    addRouteToMainGraph(analyzer, route)
+    addRouteToSecondaryGraph(analyzer, route)
 
 
 def AddCity(analyzer, city):
@@ -92,7 +93,7 @@ def AddCity(analyzer, city):
         homonym_cities = me.getValue(entry)
         lt.addLast(homonym_cities, city_data)
 
-        
+
 def AddRouteND(analyzer, route):
     """
     Se añade la ruta como un arco entre sus aeropuertos correspondientes
@@ -135,9 +136,69 @@ def addAirportToMainGraph(analyzer, airport):
     Se añaden los códigos IATA de los aeropuertos como vértices del grafo principal
     """
     MainGraph = analyzer["MainGraph"]
+    SecondaryGraph = analyzer["SecondaryGraph"]
     iata_code = airport["IATA"]
     gr.insertVertex(MainGraph, iata_code)
+    gr.insertVertex(SecondaryGraph, iata_code)
 
+
+def addRouteToMainGraph(analyzer, route):
+    """
+    Se añade la ruta como un arco entre sus aeropuertos correspondientes
+    """    
+    MainGraph = analyzer["MainGraph"]
+    origin = route["Departure"]
+    destination = route["Destination"]
+    distance = float(route["distance_km"])
+
+    edge = gr.getEdge(MainGraph, origin, destination)
+    if edge is None:
+        gr.addEdge(MainGraph, origin, destination, distance)
+
+
+def addRouteToMap(analyzer, airport1, airport2, distance):
+    """
+    Se agrega una ruta entre dos aeropuertos al mapa de rutas
+    """
+    RoutesMap = analyzer["RoutesMap"]
+    airport1_entry = mp.get(RoutesMap, airport1)
+    
+    if airport1_entry is None:    
+        airport1_map = mp.newMap(numelements=100, loadfactor=4)
+        mp.put(airport1_map, airport2, distance)
+        mp.put(RoutesMap, airport1, airport1_map)
+
+    else:
+        airport1_map = me.getValue(airport1_entry)
+        mp.put(airport1_map, airport2, distance)
+
+
+def addRouteToSecondaryGraph(analyzer, route):
+    """
+    Se agrega una ruta al grafo si en un mapa auxiliar se tiene registro de una ruta inversa a la actual
+    Nota: si la ruta actual es de la forma origen->destino, entonces la ruta inversa se refiere a que es
+    de la forma destino->origen
+    """    
+    SecondaryGraph = analyzer["SecondaryGraph"]
+    RoutesMap = analyzer["RoutesMap"]
+    origin = route["Departure"]
+    destination = route["Destination"]
+    distance = float(route["distance_km"])
+
+    edge = gr.getEdge(SecondaryGraph, origin, destination)
+    
+    if edge is None: #Verificar si ya existe una ruta entre los aeropuertos
+        destination_entry = mp.get(RoutesMap, destination)
+        
+        if destination_entry is not None: #Para determinar si existe ruta desde destination hasta origin
+            destination_map = me.getValue(destination_entry)
+            strongly_connected = mp.get(destination_map, origin) is not None
+             
+            if strongly_connected: #Los aeropuertos tienen rutas entre sí
+                gr.addEdge(SecondaryGraph, origin, destination, distance)
+
+    addRouteToMap(analyzer, origin, destination, distance) 
+            
 
 def cityData(city):
     "Filtra la información relevante de determinada ciudad"
@@ -169,28 +230,23 @@ def homonymsREQ3(analyzer, city1, city2):
 
 
 
-#PRUEBA
+"""#PRUEBA
 test_graph = gr.newGraph(datastructure='ADJ_LIST', directed=True, size=7)
-gr.insertVertex(test_graph, 0)
-gr.insertVertex(test_graph, 1)
-gr.insertVertex(test_graph, 2)
-gr.insertVertex(test_graph, 3)
-gr.insertVertex(test_graph, 4)
-gr.insertVertex(test_graph, 5)
-gr.insertVertex(test_graph, 6)
+gr.insertVertex(test_graph, "A")
+gr.insertVertex(test_graph, "B")
+gr.insertVertex(test_graph, "C")
+gr.insertVertex(test_graph, "D")
+gr.insertVertex(test_graph, "E")
 
-gr.addEdge(test_graph, 0, 1)
-gr.addEdge(test_graph, 0, 2)
-gr.addEdge(test_graph, 0, 5)
-gr.addEdge(test_graph, 5, 2)
-gr.addEdge(test_graph, 1, 4)
-gr.addEdge(test_graph, 3, 2)
-gr.addEdge(test_graph, 3, 4)
-gr.addEdge(test_graph, 3, 5)
-gr.addEdge(test_graph, 3, 6)
-gr.addEdge(test_graph, 6, 0)
-gr.addEdge(test_graph, 6, 4)
+gr.addEdge(test_graph, "A", "B")
+gr.addEdge(test_graph, "A", "D")
+gr.addEdge(test_graph, "B", "A")
+gr.addEdge(test_graph, "C", "E")
+gr.addEdge(test_graph, "D", "A")
+gr.addEdge(test_graph, "D", "E")
+gr.addEdge(test_graph, "E", "C")
 
-dfo_test = dfo.DepthFirstOrder(test_graph)
 
-print(dfo_test["reversepost"])
+scc_test = scc.KosarajuSCC(test_graph)
+
+print(scc_test)"""

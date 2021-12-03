@@ -25,31 +25,31 @@ def initAnalyzer():
 # ==============================================
 # Funciones para la carga de datos
 # ==============================================
-def loadData(analyzer):
-    loadAirports(analyzer)
-    loadRoutes(analyzer)
+def loadData(analyzer, file_size):
+    loadAirports(analyzer, file_size)
+    loadRoutes(analyzer, file_size)
     loadCities(analyzer)
 
 
-def loadAirports(analyzer):
-    airports_file = cf.data_dir + "airports_full.csv"
+def loadAirports(analyzer, file_size):
+    airports_file = cf.data_dir + "airports-utf8-" + file_size + '.csv'
     input_file = csv.DictReader(open(airports_file, encoding='utf-8'))
 
     for airport in input_file:
         model.AddAirport(analyzer, airport)
 
 
-def loadRoutes(analyzer):
-    routes_file = cf.data_dir + "routes_full.csv"
+def loadRoutes(analyzer, file_size):
+    routes_file = cf.data_dir + "routes-utf8-" + file_size + '.csv'
     input_file = csv.DictReader(open(routes_file, encoding='utf-8'))
 
     for route in input_file:
         model.AddRoute(analyzer, route)
-        model.AddRouteND(analyzer, route)
+        #model.AddRouteND(analyzer, route)
 
 
 def loadCities(analyzer):
-    cities_file = cf.data_dir + "worldcities.csv"
+    cities_file = cf.data_dir + "worldcities-utf8.csv"
     input_file = csv.DictReader(open(cities_file, encoding='utf-8'))
 
     for city in input_file:
