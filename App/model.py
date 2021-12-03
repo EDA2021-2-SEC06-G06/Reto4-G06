@@ -233,6 +233,28 @@ def homonymsREQ3(analyzer, city1, city2):
     return homonyms_map
 
 
+def REQ5(analyzer, airport):
+    MainGraph = analyzer["MainGraph"]
+    SecondaryGraph = analyzer["SecondaryGraph"]
+    affected_routes = gr.adjacentEdges(MainGraph, airport)
+    
+    affected = gr.adjacents(SecondaryGraph, airport)
+    indegree = gr.indegree(MainGraph, airport)
+    outdegree = gr.outdegree(MainGraph, airport)
+
+    """
+    num_routes = lt.size(affected_routes)
+    i=1
+    while i<=num_routes:
+        route = lt.getElement(affected_routes, i)
+        print(route)
+        i+=1"""
+
+    return affected, indegree, outdegree
+
+
+
+
 # Funciones utilizadas para comparar elementos dentro de una lista
 
 # Funciones de ordenamiento

@@ -191,15 +191,20 @@ while True:
 
     #Requerimiento 5
     elif int(inputs) == 50:
+        airport = "DXB"
 
         start_time = process_time()
-        #req5 = controller.REQ5(catalog)
+        req5, indegree, outdegree = controller.REQ5(analyzer, airport)
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
 
         print("\n\n=============== Requerimiento Número 5 ===============")
-        #print("Tiempo de ejecución: " + str(running_time) + " milisegundos\n")
-
+        print("Tiempo de ejecución: " + str(running_time) + " milisegundos\n")
+        print()
+        print(req5["elements"])
+        print("Indegree: " + str(indegree))
+        print("Outdegree: " + str(outdegree))
+        
 
 
     else:
