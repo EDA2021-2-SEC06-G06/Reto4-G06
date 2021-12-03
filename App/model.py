@@ -14,6 +14,7 @@ from DISClib.ADT import map as mp
 from DISClib.DataStructures import mapentry as me
 from DISClib.ADT import graph as gr
 from DISClib.Algorithms.Graphs import dfo
+from DISClib.Algorithms.Graphs import dfs as dfs
 assert cf
 
 
@@ -58,7 +59,6 @@ def AddAirport(analyzer, airport):
     addAirportToMap(analyzer, airport)
     addAirportToMainGraph(analyzer, airport)
 
-
 def AddRoute(analyzer, route):
     """
     Se añade la ruta como un arco entre sus aeropuertos correspondientes
@@ -91,6 +91,26 @@ def AddCity(analyzer, city):
         entry = mp.get(CitiesMap, city_name)
         homonym_cities = me.getValue(entry)
         lt.addLast(homonym_cities, city_data)
+
+        
+def AddRouteND(analyzer, route):
+    """
+    Se añade la ruta como un arco entre sus aeropuertos correspondientes
+    """ 
+    pos=1
+    MainGraph = analyzer["MainGraph"]   
+    SecondaryGraph = analyzer["SecondaryGraph"]
+    sizeEdges= gr.numEdges(MainGraph)
+    Vertices=gr.vertices(MainGraph)
+    SizeVertices=lt.size(Vertices)
+    while pos<=SizeVertices:
+        MapOfJointVertices= mp.newMap()
+        Vertice= lt.getElement(Vertices, pos)
+        dfs.dfsVertex(MapOfJointVertices, MainGraph, Vertice)
+        pos+=1
+        cat=1
+    Gau=dfs.DepthFirstSearch(MainGraph,"AAE")
+    miaau=1
 
 
 # Funciones para creacion de datos
