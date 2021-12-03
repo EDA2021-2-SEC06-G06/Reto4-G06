@@ -65,6 +65,9 @@ def loadCities(analyzer):
 # Funciones de consulta sobre el analizador
 # ==============================================
 
+def REQ2(analyzer, airport1, airport2):
+    return model.REQ2(analyzer, airport1, airport2)
+
 def homonymsREQ3(analyzer, city1, city2):
     return model.homonymsREQ3(analyzer, city1, city2)
 

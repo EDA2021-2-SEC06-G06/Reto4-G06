@@ -96,7 +96,7 @@ while True:
     #Carga de datos
     if int(inputs) == 1:
         #file_size = input("Ingrese el sufijo del archivo que desea utilizar (small, large, 10pct...): ")
-        file_size = "large"
+        file_size = "small"
 
         print("Cargando información de los archivos ....")
         analyzer = initAnalyzer()
@@ -138,14 +138,19 @@ while True:
 
     #Requerimiento 2
     elif int(inputs) == 20:
+        airport1 = "LED"
+        airport2 = "RTP"
 
         start_time = process_time()
-        #req2 = controller.REQ2(catalog)
+        num_clusters, same_cluster = controller.REQ2(analyzer, airport1, airport2)
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
 
         print("\n\n=============== Requerimiento Número 2 ===============")
-        #print("Tiempo de ejecución: " + str(running_time) + " milisegundos")
+        print("Tiempo de ejecución: " + str(running_time) + " milisegundos")
+
+        print("\nNúmero de clusters: " + str(num_clusters))
+        print("¿" + airport1 + " y " + airport2 + " pertenecen al mismo cluster? " + str(same_cluster))
 
 
 

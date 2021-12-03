@@ -212,6 +212,15 @@ def cityData(city):
 
 
 # Funciones de consulta
+def REQ2(analyzer, airport1, airport2):
+    MainGraph = analyzer["MainGraph"]
+    kosaraju_scc = scc.KosarajuSCC(MainGraph)
+    num_clusters = kosaraju_scc["components"]
+    same_cluster = scc.stronglyConnected(kosaraju_scc, airport1, airport2)
+
+    return num_clusters, same_cluster
+
+
 def homonymsREQ3(analyzer, city1, city2):
     CitiesMap = analyzer["CitiesMap"]
     origin_homonyms = me.getValue(mp.get(CitiesMap, city1))
