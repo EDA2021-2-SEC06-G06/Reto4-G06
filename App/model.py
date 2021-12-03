@@ -13,6 +13,7 @@ from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
 from DISClib.DataStructures import mapentry as me
 from DISClib.ADT import graph as gr
+from DISClib.Algorithms.Graphs import dfo
 assert cf
 
 
@@ -145,3 +146,31 @@ def homonymsREQ3(analyzer, city1, city2):
 # Funciones utilizadas para comparar elementos dentro de una lista
 
 # Funciones de ordenamiento
+
+
+
+#PRUEBA
+test_graph = gr.newGraph(datastructure='ADJ_LIST', directed=True, size=7)
+gr.insertVertex(test_graph, 0)
+gr.insertVertex(test_graph, 1)
+gr.insertVertex(test_graph, 2)
+gr.insertVertex(test_graph, 3)
+gr.insertVertex(test_graph, 4)
+gr.insertVertex(test_graph, 5)
+gr.insertVertex(test_graph, 6)
+
+gr.addEdge(test_graph, 0, 1)
+gr.addEdge(test_graph, 0, 2)
+gr.addEdge(test_graph, 0, 5)
+gr.addEdge(test_graph, 5, 2)
+gr.addEdge(test_graph, 1, 4)
+gr.addEdge(test_graph, 3, 2)
+gr.addEdge(test_graph, 3, 4)
+gr.addEdge(test_graph, 3, 5)
+gr.addEdge(test_graph, 3, 6)
+gr.addEdge(test_graph, 6, 0)
+gr.addEdge(test_graph, 6, 4)
+
+dfo_test = dfo.DepthFirstOrder(test_graph)
+
+print(dfo_test["reversepost"])

@@ -32,7 +32,7 @@ def loadData(analyzer):
 
 
 def loadAirports(analyzer):
-    airports_file = cf.data_dir + "airports_test.csv"
+    airports_file = cf.data_dir + "airports_full.csv"
     input_file = csv.DictReader(open(airports_file, encoding='utf-8'))
 
     for airport in input_file:
@@ -40,7 +40,7 @@ def loadAirports(analyzer):
 
 
 def loadRoutes(analyzer):
-    routes_file = cf.data_dir + "routes_test.csv"
+    routes_file = cf.data_dir + "routes_full.csv"
     input_file = csv.DictReader(open(routes_file, encoding='utf-8'))
 
     for route in input_file:
