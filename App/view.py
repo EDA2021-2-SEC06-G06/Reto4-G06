@@ -16,6 +16,7 @@ from DISClib.DataStructures import mapentry as me
 from DISClib.ADT import graph as gr
 assert cf
 
+sys.setrecursionlimit(2**20)
 
 def printMenu():
     print("\n\n-----------------------------------------")
@@ -138,6 +139,8 @@ while True:
 
     #Requerimiento 2
     elif int(inputs) == 20:
+        #airport1 = input("Ingrese el código IATA del primer aeropuerto a consultar: ")
+        #airport2 = input("Ingrese el código IATA del segundo aeropuerto a consultar: ")
         airport1 = "LED"
         airport2 = "RTP"
 
@@ -177,7 +180,7 @@ while True:
     elif int(inputs) == 40:
 
         start_time = process_time()
-        #req3 = controller.REQ4(catalog)
+        #req4 = controller.REQ4(catalog)
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
 
