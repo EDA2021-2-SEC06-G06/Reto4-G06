@@ -66,6 +66,8 @@ def loadCities(analyzer):
 # ==============================================
 # Funciones de consulta sobre el analizador
 # ==============================================
+def REQ1(analyzer):
+    return model.REQ1(analyzer)
 
 def REQ2(analyzer, airport1, airport2):
     return model.REQ2(analyzer, airport1, airport2)
@@ -78,3 +80,7 @@ def REQ3(analyzer, origin, destination):
 
 def REQ5(analyzer, airport):
     return model.REQ5(analyzer, airport)
+    print("\n\nRequerimiento en elaboración...")
+ 
+def REQ4(analyzer, Origin, miles):
+    return model.REQ4(analyzer, Origin, miles)
