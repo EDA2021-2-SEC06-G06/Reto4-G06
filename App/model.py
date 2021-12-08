@@ -7,10 +7,10 @@ Daniel Hernández Pineda
 """
 
 
+
 import config as cf
 from DISClib.Utils import error as error
 from DISClib.ADT import list as lt
-from DISClib.ADT import a
 from DISClib.ADT import map as mp
 from DISClib.Algorithms.Graphs import prim as pr
 from DISClib.DataStructures import mapentry as me
@@ -217,37 +217,59 @@ def cityData(city):
 
 # Funciones de consulta
 def REQ1(analyzer):
-    pos=1
+    pos1=1
+    
     NumberOfAirports = 0
     TreeWAirports = om.newMap(omaptype="RBT")
-    AirportsMap = analyzer["AirportsMap"]
-    MainGraph = analyzer["MainGraph"]  
-    vertices = gr.vertices(MainGraph)
-    sizeVertices = lt.size(vertices)
-    while pos<=sizeVertices:
-        verticeAtTheMoment = lt.getElement(vertices, pos)
-        verticesAdjacents = gr.adjacents(MainGraph, verticeAtTheMoment)
-        NumberOfverticesAdjacents = lt.size(verticesAdjacents)
-        if NumberOfverticesAdjacents>0:
-            DataList = lt.newList("ARRAY_LIST")
+    MainGraph = analyzer["MainGraph"]
+    vertices1 = gr.vertices(MainGraph)          #Se sacan los veertices del grafo
+    sizeVertices1 = lt.size(vertices1)
+    
+    while pos1<=sizeVertices1:
+        verticeAtTheMoment = lt.getElement(vertices1, pos1)
+        verticesoutdegree = gr.outdegree(MainGraph, verticeAtTheMoment)
+        verticesindegree = gr.indegree(MainGraph, verticeAtTheMoment)          #Se encuentra el numero de arcos que entran y saen en cada nodo
+            
+        if verticesindegree>0 and verticesoutdegree>0:                        #Se encuentran los vertices interconectados del grafo no dirigido
             NumberOfAirports +=1
-            EntryData = mp.get(AirportsMap, verticeAtTheMoment)                #El data es el IATA
-            Data = me.getValue(EntryData)
-            EntryName = mp.get(Data, "Name")
-            Name = me.getValue(EntryName)
-            EntryCity = mp.get(Data, "City")
-            City = me.getValue(EntryCity)
-            EntryCountry = mp.get(Data, "Country")
-            Country = me.getValue(EntryCountry)
-            print(Country)
-            lt.addLast(DataList, verticeAtTheMoment)
-            lt.addLast(DataList, Name)
-            lt.addLast(DataList, City)
-            lt.addLast(DataList, Country)
-            om.put(TreeWAirports, NumberOfverticesAdjacents, DataList)
-        pos+=1
+            Connections = verticesoutdegree+verticesindegree
+            DataList = DataREQ1(verticeAtTheMoment, analyzer, Connections)
+            om.put(TreeWAirports, Connections, DataList)
+
+        if verticesoutdegree>0 and verticesindegree==0:                           #Se encuentran los verces del grafo dirigido
+            NumberOfAirports+=1
+            DataList = DataREQ1(verticeAtTheMoment, analyzer, verticesoutdegree)
+            om.put(TreeWAirports, verticesoutdegree, DataList)
+
+        if verticesindegree>0 and verticesoutdegree==0:
+            NumberOfAirports+=1
+            DataList = DataREQ1(verticeAtTheMoment, analyzer, verticesindegree)
+            om.put(TreeWAirports, verticesindegree, DataList)
+
+        pos1+=1
+
+    
     DataInOrder = re.inorder(TreeWAirports)
     return NumberOfAirports, DataInOrder
+
+def DataREQ1(verticeAtTheMoment, analyzer, Connections):
+
+    AirportsMap = analyzer["AirportsMap"]                    #Se agregan los datos necesarios
+    DataList = lt.newList("ARRAY_LIST")
+    EntryData = mp.get(AirportsMap, verticeAtTheMoment)               
+    Data = me.getValue(EntryData)
+    EntryName = mp.get(Data, "Name")
+    Name = me.getValue(EntryName)
+    EntryCity = mp.get(Data, "City")
+    City = me.getValue(EntryCity)
+    EntryCountry = mp.get(Data, "Country")
+    Country = me.getValue(EntryCountry)
+    lt.addLast(DataList, Connections)
+    lt.addLast(DataList, verticeAtTheMoment)
+    lt.addLast(DataList, Name)
+    lt.addLast(DataList, City)
+    lt.addLast(DataList, Country)
+    return DataList
 
 def REQ2(analyzer, airport1, airport2):
     MainGraph = analyzer["MainGraph"]
@@ -272,7 +294,9 @@ def homonymsREQ3(analyzer, city1, city2):
 def REQ4(analyzer, Origin, miles):
     MainGraph = analyzer["MainGraph"]
     MSTMainGraph = pr.PrimMST(MainGraph)
-
+    NumEdges = gr.numEdges(MSTMainGraph)
+    c=1
+    return NumEdges
 
 # Funciones utilizadas para comparar elementos dentro de una lista
 
