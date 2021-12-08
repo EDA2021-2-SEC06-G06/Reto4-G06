@@ -50,8 +50,10 @@ def loadData(analyzer, file_size):
 
 
 def chooseHomonymsREQ3(homonyms_map, city1, city2):
-    origin_homonyms = me.getValue(mp.get(homonyms_map, "origin"))
-    destination_homonyms = me.getValue(mp.get(homonyms_map, "destination"))
+    origin_map = me.getValue(mp.get(homonyms_map, "origin"))
+    destination_map = me.getValue(mp.get(homonyms_map, "destination"))
+    origin_homonyms = mp.valueSet(origin_map)
+    destination_homonyms = mp.valueSet(destination_map)
     origin = lt.getElement(origin_homonyms, 1)
     destination = lt.getElement(destination_homonyms, 1)
 
@@ -160,8 +162,12 @@ while True:
     #Requerimiento 3
     elif int(inputs) == 30:
 
-        city1 = input("Ingrese el nombre de la ciudad de origen: ")
-        city2 = input("Ingrese el nombre de la ciudad de destino: ")
+        #city1 = input("Ingrese el nombre de la ciudad de origen: ")
+        #city2 = input("Ingrese el nombre de la ciudad de destino: ")
+
+        #Para pruebas
+        city1 = "Saint Petersburg"
+        city2 = "Lisbon"
 
         homonyms_map = controller.homonymsREQ3(analyzer, city1, city2)
         origin,destination = chooseHomonymsREQ3(homonyms_map, city1, city2)
@@ -171,8 +177,8 @@ while True:
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
 
-        #print("\n\n=============== Requerimiento Número 3 ===============")
-        #print("Tiempo de ejecución: " + str(running_time) + " milisegundos\n")
+        print("\n\n=============== Requerimiento Número 3 ===============")
+        print("Tiempo de ejecución: " + str(running_time) + " milisegundos\n")
 
 
 

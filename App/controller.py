@@ -72,7 +72,7 @@ def homonymsREQ3(analyzer, city1, city2):
     return model.homonymsREQ3(analyzer, city1, city2)
 
 def REQ3(analyzer, origin, destination):
-    print("\n\nRequerimiento en elaboración...")
+    return model.REQ3(analyzer, origin, destination)
 
 def REQ5(analyzer, airport):
     return model.REQ5(analyzer, airport)

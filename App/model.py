@@ -11,13 +11,16 @@ import config as cf
 from DISClib.Utils import error as error
 from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
+from DISClib.ADT import orderedmap as om
 from DISClib.DataStructures import mapentry as me
 from DISClib.ADT import graph as gr
 from DISClib.Algorithms.Graphs import dfo
 from DISClib.Algorithms.Graphs import dfs
 from DISClib.Algorithms.Graphs import scc
+from DISClib.Algorithms.Graphs import dijsktra as djk
 assert cf
 
+from haversine import haversine
 
 # ==============================================
 # Construccion de modelos
@@ -30,29 +33,32 @@ def newAnalyzer():
                "SecondaryGraph": None,
                "AirportsMap": None,
                "RoutesMap": None,
-               "CitiesMap": None} 
+               "CitiesMap": None,
+               "CoordinateTreeReq3": None} 
 
     analyzer["MainGraph"] = gr.newGraph(datastructure='ADJ_LIST',
                                        directed=True,
-                                       size=10000)
+                                       size=100000)
                                        #comparefunction=compareStopIds)
                                        
     analyzer["SecondaryGraph"] = gr.newGraph(datastructure='ADJ_LIST',
                                             directed=False,
-                                            size=10000)
+                                            size=100000)
                                             #comparefunction=compareStopIds)
 
     analyzer["AirportsMap"] = mp.newMap(10000,
                                         maptype='PROBING',
                                         loadfactor=0.5)
 
-    analyzer["RoutesMap"] = mp.newMap(10,
+    analyzer["RoutesMap"] = mp.newMap(93000,
                                       maptype='PROBING',
                                       loadfactor=0.5)
     
     analyzer["CitiesMap"] = mp.newMap(40000,
                                       maptype='PROBING',
                                       loadfactor=0.5)
+
+    analyzer["CoordinateTreeReq3"] = om.newMap(omaptype="RBT")
     
     return analyzer
 
@@ -63,7 +69,8 @@ def AddAirport(analyzer, airport):
     Se añade cada aeropuerto al mapa de aeropuertos y a los grafos
     """
     addAirportToMap(analyzer, airport)
-    addAirportToMainGraph(analyzer, airport)
+    addAirportToGraphs(analyzer, airport)
+    addAirportToTreeREQ3(analyzer, airport)
 
 
 def AddRoute(analyzer, route):
@@ -76,22 +83,23 @@ def AddRoute(analyzer, route):
 
 def AddCity(analyzer, city):
     """
-    Crea una tabla de hash de la forma 'key'= nombre de ciudad, 'value'= lista de ciudades homónimas
+    Crea una tabla de hash de la forma 'key'= nombre de ciudad, 'value'= hashmap de ciudades homónimas según su id
     """
     CitiesMap = analyzer["CitiesMap"]
     city_name = city["city_ascii"]
+    city_id = city["id"]
     city_data = cityData(city)
     exists_city= mp.contains(CitiesMap, city_name)
     
-    if not exists_city:    #Se crea la llave y la lista de ciudades homónimas
-        homonym_cities = lt.newList("ARRAY_LIST")
-        lt.addLast(homonym_cities, city_data)
+    if not exists_city:    #Se crea la llave y el hashmap de ciudades homónimas
+        homonym_cities = mp.newMap()
+        mp.put(homonym_cities, city_id, city_data)
         mp.put(CitiesMap, city_name, homonym_cities)
     
     else:                  #Se añade la información de la ciudad en la entrada ya existente
         entry = mp.get(CitiesMap, city_name)
         homonym_cities = me.getValue(entry)
-        lt.addLast(homonym_cities, city_data)
+        mp.put(homonym_cities, city_id, city_data)
 
 
 def AddRouteND(analyzer, route):
@@ -117,21 +125,13 @@ def AddRouteND(analyzer, route):
 # Funciones para creacion de datos
 def addAirportToMap(analyzer, airport):
     """
-    Se añaden los aeropuertos a un mapa según su código IATA
+    Se añade un aeropuerto al un mapa de aeropuertos según su código IATA
     """
     AirportsMap = analyzer["AirportsMap"]
-    airport_info = mp.newMap(numelements=5, maptype="CHAINING", loadfactor=4)
- 
-    mp.put(airport_info, "Name", airport["Name"])
-    mp.put(airport_info, "City", airport["City"])
-    mp.put(airport_info, "Country", airport["Country"])
-    mp.put(airport_info, "Latitude", airport["Latitude"])
-    mp.put(airport_info, "Longitude", airport["Longitude"])
-
-    mp.put(AirportsMap, airport["IATA"], airport_info)
+    mp.put(AirportsMap, airport["IATA"], airport)
 
 
-def addAirportToMainGraph(analyzer, airport):
+def addAirportToGraphs(analyzer, airport):
     """
     Se añaden los códigos IATA de los aeropuertos como vértices del grafo principal
     """
@@ -140,6 +140,26 @@ def addAirportToMainGraph(analyzer, airport):
     iata_code = airport["IATA"]
     gr.insertVertex(MainGraph, iata_code)
     gr.insertVertex(SecondaryGraph, iata_code)
+
+
+def addAirportToTreeREQ3(analyzer, airport):
+    """
+    Crea un árbol cuyos nodos son de la forma 'key'= longitud, 'value'= árbol de ciudades según latitud
+    """
+    LongitudeTree = analyzer["CoordinateTreeReq3"]
+    longitude = round(float(airport["Longitude"]),2)
+    latitude = round(float(airport["Latitude"]),2)
+    longitude_entry = om.get(LongitudeTree, longitude)
+
+    if longitude_entry is None:
+        LatitudeTree = om.newMap(omaptype="RBT")
+        om.put(LatitudeTree, latitude, airport)
+        om.put(LongitudeTree, longitude, LatitudeTree)
+
+    else:
+        LatitudeTree= me.getValue(longitude_entry)
+        om.put(LatitudeTree, latitude, airport)
+        #No hace falta verificar la entrada porque no hay dos aeropuertos en la misma coordenada    
 
 
 def addRouteToMainGraph(analyzer, route):
@@ -203,10 +223,11 @@ def addRouteToSecondaryGraph(analyzer, route):
 def cityData(city):
     "Filtra la información relevante de determinada ciudad"
 
-    city_data = {"country": city["country"],
+    city_data = {"name": city["city_ascii"],
                  "id": city["id"],
-                 "latitude": city["lat"],
-                 "longitude": city["lng"]}
+                 "country": city["country"],
+                 "latitude": round(float(city["lat"]),2),
+                 "longitude": round(float(city["lng"]),2)}
     
     return city_data
 
@@ -231,6 +252,71 @@ def homonymsREQ3(analyzer, city1, city2):
     mp.put(homonyms_map, "destination", destination_homonyms)
 
     return homonyms_map
+
+
+def calculateRangeREQ3(lon_low, lon_high, lat_low, lat_high):
+    
+    lon_low = lon_low - 5
+    lon_high = lon_high + 5
+    lat_low = lat_low - 5
+    lat_high = lat_high + 5
+
+    return lon_low, lon_high, lat_low, lat_high
+
+
+def findNearestAirportREQ3(analyzer, city):
+
+    LongitudeTree = analyzer["CoordinateTreeReq3"]
+    city_longitude = city["longitude"]
+    city_latitude = city["latitude"]
+    coord_city = (city_latitude, city_longitude) #(lat,long)
+    lon_low, lon_high, lat_low, lat_high = calculateRangeREQ3(city_longitude, city_longitude,
+                                                              city_latitude, city_latitude)
+    
+    final_airport = None
+    min_distance = 100000000000000000000000000
+    found = False
+    
+    while not found:
+        longitudesInRange = om.values(LongitudeTree, lon_low, lon_high)
+        longitude_size = lt.size(longitudesInRange)
+        pos_longitude = 1
+        
+        while pos_longitude <= longitude_size:
+            LatitudeTree = lt.getElement(longitudesInRange, pos_longitude)
+            latitudesInRange = om.values(LatitudeTree, lat_low, lat_high)
+            latitudes_size = lt.size(latitudesInRange)
+            pos_latitude = 1
+            
+            while pos_latitude <= latitudes_size:
+                found = True
+                airport = lt.getElement(latitudesInRange, pos_latitude)
+                coord_airport = (float(airport["Latitude"]),float(airport["Longitude"]))
+                distance = haversine(coord_city, coord_airport)
+                
+                if distance < min_distance:
+                    final_airport = airport
+                    min_distance = distance
+
+                pos_latitude += 1
+            pos_longitude += 1
+
+        lon_low, lon_high, lat_low, lat_high = calculateRangeREQ3(city_longitude, city_longitude,
+                                                                  city_latitude, city_latitude)
+
+    return final_airport, distance
+
+
+def REQ3(analyzer, origin_city, destination_city):
+    origin_airport, origin_airport_distance = findNearestAirportREQ3(analyzer, origin_city)
+    destination_airport, destination_airport_distance = findNearestAirportREQ3(analyzer, destination_city)
+
+    search = djk.Dijkstra(analyzer["MainGraph"], origin_airport["IATA"])
+    distance_between_airports = djk.distTo(search, destination_airport["IATA"])
+
+    total_distance = origin_airport_distance + destination_airport_distance + distance_between_airports
+
+    return total_distance
 
 
 def REQ5(analyzer, airport):
@@ -260,24 +346,16 @@ def REQ5(analyzer, airport):
 # Funciones de ordenamiento
 
 
+#PRUEBA
+test_graph = gr.newGraph(datastructure='ADJ_LIST', directed=True, size=10)
 
-"""#PRUEBA
-test_graph = gr.newGraph(datastructure='ADJ_LIST', directed=True, size=7)
 gr.insertVertex(test_graph, "A")
 gr.insertVertex(test_graph, "B")
 gr.insertVertex(test_graph, "C")
-gr.insertVertex(test_graph, "D")
-gr.insertVertex(test_graph, "E")
 
-gr.addEdge(test_graph, "A", "B")
-gr.addEdge(test_graph, "A", "D")
-gr.addEdge(test_graph, "B", "A")
-gr.addEdge(test_graph, "C", "E")
-gr.addEdge(test_graph, "D", "A")
-gr.addEdge(test_graph, "D", "E")
-gr.addEdge(test_graph, "E", "C")
+gr.addEdge(test_graph, "A", "B", 10)
+gr.addEdge(test_graph, "B", "C", 20)
 
+search1 = djk.Dijkstra(test_graph, "A")
 
-scc_test = scc.KosarajuSCC(test_graph)
-
-print(scc_test)"""
+print("Distancia entre A y C:", djk.distTo(search1, "C"))
