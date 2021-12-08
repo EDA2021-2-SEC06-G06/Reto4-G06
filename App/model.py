@@ -39,13 +39,11 @@ def newAnalyzer():
 
     analyzer["MainGraph"] = gr.newGraph(datastructure='ADJ_LIST',
                                        directed=True,
-                                       size=1000000,
-                                       comparefunction=compareStopIds)
+                                       size=100000)
                                        
     analyzer["SecondaryGraph"] = gr.newGraph(datastructure='ADJ_LIST',
                                             directed=False,
                                             size=100000)
-                                            #comparefunction=compareStopIds)
 
     analyzer["AirportsMap"] = mp.newMap(10000,
                                         maptype='PROBING',
@@ -238,6 +236,8 @@ def cityData(city):
 
 
 # Funciones de consulta
+
+#Requerimiento 2
 def REQ2(analyzer, airport1, airport2):
     MainGraph = analyzer["MainGraph"]
     kosaraju_scc = scc.KosarajuSCC(MainGraph)
@@ -352,10 +352,16 @@ def getUnrepeatedREQ5(in_affected, out_affected):
     return affected
 
 
+def removeVertexREQ5(analyzer, airport):
+    MainGraph = analyzer["MainGraph"]
+    ReversedMainGraph = analyzer["ReversedMainGraphReq5"]
+    affected_in_routes = gr.adjacentEdges(ReversedMainGraph, airport)
+    affected_out_routes = gr.adjacentEdges(MainGraph, airport)
+
+
 def REQ5(analyzer, airport):
     MainGraph = analyzer["MainGraph"]
     ReversedMainGraph = analyzer["ReversedMainGraphReq5"]
-    affected_routes = gr.adjacentEdges(MainGraph, airport)
     
     in_affected = gr.adjacents(ReversedMainGraph, airport)
     out_affected = gr.adjacents(MainGraph, airport)
@@ -364,7 +370,7 @@ def REQ5(analyzer, airport):
 
     affected = getUnrepeatedREQ5(in_affected, out_affected)
 
-    return in_affected, out_affected, affected, indegree, outdegree
+    return affected, indegree, outdegree
 
 
 # Funciones utilizadas para comparar elementos dentro de una lista

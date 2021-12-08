@@ -49,6 +49,43 @@ def loadData(analyzer, file_size):
     controller.loadData(analyzer, file_size)
 
 
+def printGraphsInfo(analyzer):
+    print("\n===Digrafo de aeropuertos y rutas===")
+    num_airports1 = gr.numVertices(analyzer["MainGraph"])
+    num_routes1 = gr.numEdges(analyzer["MainGraph"])
+    print("Número de aeropuertos: " + str(num_airports1))
+    print("Número de rutas: " + str(num_routes1))
+
+    print("\n===Grafo no dirigido de aeropuertos y rutas===")
+    num_airports2 = gr.numVertices(analyzer["SecondaryGraph"])
+    num_routes2 = gr.numEdges(analyzer["SecondaryGraph"])
+    print("Número de aeropuertos: " + str(num_airports2))
+    print("Número de rutas: " + str(num_routes2))
+
+
+def printReq2(analyzer, IATA_airport1, IATA_airport2, num_clusters, same_cluster):
+    AirportsMap = analyzer["AirportsMap"]
+    print("\nNúmero de clusters en la red de aeropuertos: " + str(num_clusters))
+
+    print("\nInformación del aeropuerto 1: ")
+    airport1 = me.getValue(mp.get(AirportsMap, IATA_airport1))
+    airport1_name = airport1["Name"]
+    airport1_city = airport1["City"]
+    print("Nombre: " + airport1_name + "   //   " + "Ciudad: " + airport1_city + "   //   " + "Código IATA: " + IATA_airport1)
+    
+    print("\nInformación del aeropuerto 2: ")
+    airport2 = me.getValue(mp.get(AirportsMap, IATA_airport2))
+    airport2_name = airport2["Name"]
+    airport2_city = airport2["City"]
+    print("Nombre: " + airport2_name + "   //   " + "Ciudad: " + airport2_city + "   //   " + "Código IATA: " + IATA_airport2)
+    
+    resp = "NO"
+    if same_cluster:
+        resp = "SÍ"
+
+    print("\nLos aeropuertos " + resp + " pertenecen al mismo cluster")
+
+
 def chooseHomonymsREQ3(homonyms_map, city1, city2):
     origin_map = me.getValue(mp.get(homonyms_map, "origin"))
     destination_map = me.getValue(mp.get(homonyms_map, "destination"))
@@ -109,9 +146,36 @@ def printReq3(distance, path, origin_airport, destination_airport, origin_city, 
         print(route["vertexA"] + " --> " + route["vertexB"] + " // Distancia: " + str(route["weight"]) + " km")
         i+=1
 
-    print("\nLa distancia total del recorrido, incluyendo las distancias de las ciudades a los aeropuertos, es:")
-    print(str(distance) + " kilómetros")
+    print("\nLa distancia total del recorrido, incluyendo las distancias de las ciudades a los aeropuertos, es: " + str(distance) + " kilómetros")
 
+
+def printReq5(analyzer, airport, indegree, outdegree, affected):
+    num_affected = lt.size(affected)
+
+    print("Número de afectados con rutas HACIA " + airport + ": " + str(indegree))
+
+    print("\nNúmero de afectados con rutas DESDE " + airport + ": " + str(outdegree))
+
+    print("\n********************")
+    print("Total de afectados: " + str(num_affected))
+    print("********************")
+    AirportsMap = analyzer["AirportsMap"]
+
+    for pos_affected in range(3):
+        if num_affected >= num_affected:
+            IATA_code = lt.getElement(affected, pos_affected)
+            airport = me.getValue(mp.get(AirportsMap, IATA_code))
+            airport_name = airport["Name"]
+            airport_city = airport["City"]
+            print("Nombre: " + airport_name + "   //   " + "Ciudad: " + airport_city + "   //   " + "Código IATA: " + IATA_code)
+
+    for pos_affected in range(num_affected-2, num_affected+1):
+        if pos_affected > 3:
+            IATA_code = lt.getElement(affected, pos_affected)
+            airport = me.getValue(mp.get(AirportsMap, IATA_code))
+            airport_name = airport["Name"]
+            airport_city = airport["City"]
+            print("Nombre: " + airport_name + "   //   " + "Ciudad: " + airport_city + "   //   " + "Código IATA: " + IATA_code)
 
 
 
@@ -124,7 +188,7 @@ while True:
     #Carga de datos
     if int(inputs) == 1:
         #file_size = input("Ingrese el sufijo del archivo que desea utilizar (small, large, 10pct...): ")
-        file_size = "small"
+        file_size = "large"
 
         print("Cargando información de los archivos ....")
         analyzer = initAnalyzer()
@@ -136,18 +200,7 @@ while True:
         
         print("\nTiempo de carga: " + str(running_time) + " milisegundos")
         
-        #DAR ESPECIFICACIONES SOBRE LA CARGA DE DATOS (# de aeropuertos en cada grafo, etc.)
-        print("\n===Digrafo de aeropuertos y rutas===")
-        num_airports1 = gr.numVertices(analyzer["MainGraph"])
-        num_routes1 = gr.numEdges(analyzer["MainGraph"])
-        print("Número de aeropuertos: " + str(num_airports1))
-        print("Número de rutas: " + str(num_routes1))
-
-        print("\n===Grafo no dirigido de aeropuertos y rutas===")
-        num_airports2 = gr.numVertices(analyzer["SecondaryGraph"])
-        num_routes2 = gr.numEdges(analyzer["SecondaryGraph"])
-        print("Número de aeropuertos: " + str(num_airports2))
-        print("Número de rutas: " + str(num_routes2))
+        printGraphsInfo(analyzer)
 
 
 
@@ -159,7 +212,7 @@ while True:
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
 
-        print("\n\n=============== Requerimiento Número 1 ===============")
+        print("\n=============== Requerimiento Número 1 ===============")
         #print("Tiempo de ejecución: " + str(running_time) + " milisegundos")
 
 
@@ -176,11 +229,10 @@ while True:
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
 
-        print("\n\n=============== Requerimiento Número 2 ===============")
+        print("\n=============== Requerimiento Número 2 ===============")
         print("Tiempo de ejecución: " + str(running_time) + " milisegundos")
 
-        print("\nNúmero de clusters: " + str(num_clusters))
-        print("¿" + airport1 + " y " + airport2 + " pertenecen al mismo cluster? " + str(same_cluster))
+        printReq2(analyzer, airport1, airport2, num_clusters, same_cluster)
 
 
 
@@ -202,9 +254,10 @@ while True:
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
 
-        print("\n\n=============== Requerimiento Número 3 ===============")
+        print("\n=============== Requerimiento Número 3 ===============")
         print("Tiempo de ejecución: " + str(running_time) + " milisegundos\n")
         printReq3(distance, path, origin_airport, destination_airport, origin_city, destination_city)
+
 
 
     #Requerimiento 4
@@ -215,28 +268,32 @@ while True:
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
 
-        print("\n\n=============== Requerimiento Número 4 ===============")
+        print("\n=============== Requerimiento Número 4 ===============")
         #print("Tiempo de ejecución: " + str(running_time) + " milisegundos")
     
 
 
     #Requerimiento 5
     elif int(inputs) == 50:
+        #airport = input("Ingrese el IATA del aeropuerto que desea verificar: ")
+
+        #Para pruebas
         airport = "DXB"
 
         start_time = process_time()
-        in_req5, out_req5, req5, indegree, outdegree = controller.REQ5(analyzer, airport)
+        req5, indegree, outdegree = controller.REQ5(analyzer, airport)
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
 
-        print("\n\n=============== Requerimiento Número 5 ===============")
+        print("\n=============== Requerimiento Número 5 ===============")
         print("Tiempo de ejecución: " + str(running_time) + " milisegundos\n")
-        print()
-        print(in_req5["elements"])
-        print(out_req5["elements"])
-        print(req5["elements"])
-        print("Indegree: " + str(indegree))
-        print("Outdegree: " + str(outdegree))
+        printReq5(analyzer, airport, indegree, outdegree, req5)
+
+        print("\n¿Desea verificar la nueva estructura del grafo tras eliminar el aeropuerto " + airport + "?")
+        opcion5 = input("Digite 1 si así lo desea, o 0 de lo contrario: ")
+
+        if opcion5=="1":
+            printGraphsInfo(analyzer)
         
 
 
