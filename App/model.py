@@ -112,26 +112,6 @@ def CreateReversedMainGraphREQ5(analyzer):
     analyzer["ReversedMainGraphReq5"] = scc.reverseGraph(analyzer["MainGraph"])
 
 
-def AddRouteND(analyzer, route):
-    """
-    Se añade la ruta como un arco entre sus aeropuertos correspondientes
-    """ 
-    pos=1
-    MainGraph = analyzer["MainGraph"]   
-    SecondaryGraph = analyzer["SecondaryGraph"]
-    sizeEdges= gr.numEdges(MainGraph)
-    Vertices=gr.vertices(MainGraph)
-    SizeVertices=lt.size(Vertices)
-    while pos<=SizeVertices:
-        MapOfJointVertices= mp.newMap()
-        Vertice= lt.getElement(Vertices, pos)
-        dfs.dfsVertex(MapOfJointVertices, MainGraph, Vertice)
-        pos+=1
-        cat=1
-    Gau=dfs.DepthFirstSearch(MainGraph,"AAE")
-    miaau=1
-
-
 
 # ==============================================
 # Funciones para creacion de datos
@@ -250,7 +230,7 @@ def cityData(city):
 # Funciones de consulta
 # ==============================================
 
-#Requerimiento 2
+#Requerimiento 1
 def REQ1(analyzer):
     pos1=1
     
@@ -306,6 +286,8 @@ def DataREQ1(verticeAtTheMoment, analyzer, Connections):
     lt.addLast(DataList, Country)
     return DataList
 
+#Requerimiento 2
+
 def REQ2(analyzer, airport1, airport2):
     MainGraph = analyzer["MainGraph"]
     kosaraju_scc = scc.KosarajuSCC(MainGraph)
@@ -327,12 +309,7 @@ def homonymsREQ3(analyzer, city1, city2):
 
     return homonyms_map
 
-def REQ4(analyzer, Origin, miles):
-    MainGraph = analyzer["MainGraph"]
-    MSTMainGraph = pr.PrimMST(MainGraph)
-    NumEdges = gr.numEdges(MSTMainGraph)
-    c=1
-    return NumEdges
+
 
 def calculateRangeREQ3(lon_low, lon_high, lat_low, lat_high):
     
@@ -399,6 +376,14 @@ def REQ3(analyzer, origin_city, destination_city):
 
     return total_distance, path, origin_airport, destination_airport
 
+#Requerimiento  4
+
+def REQ4(analyzer, Origin, miles):
+    MainGraph = analyzer["MainGraph"]
+    MSTMainGraph = pr.PrimMST(MainGraph)
+    NumEdges = gr.numEdges(MSTMainGraph)
+    c=1
+    return NumEdges
 
 #Requerimiento 5
 def getUnrepeatedREQ5(in_affected, out_affected):
