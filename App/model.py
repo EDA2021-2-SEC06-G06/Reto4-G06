@@ -10,9 +10,13 @@ Daniel Hernández Pineda
 import config as cf
 from DISClib.Utils import error as error
 from DISClib.ADT import list as lt
+from DISClib.ADT import a
 from DISClib.ADT import map as mp
+from DISClib.Algorithms.Graphs import prim as pr
 from DISClib.DataStructures import mapentry as me
+from DISClib.Algorithms.Trees import traversal as re
 from DISClib.ADT import graph as gr
+from DISClib.ADT import orderedmap as om
 from DISClib.Algorithms.Graphs import dfo
 from DISClib.Algorithms.Graphs import dfs
 from DISClib.Algorithms.Graphs import scc
@@ -212,6 +216,39 @@ def cityData(city):
 
 
 # Funciones de consulta
+def REQ1(analyzer):
+    pos=1
+    NumberOfAirports = 0
+    TreeWAirports = om.newMap(omaptype="RBT")
+    AirportsMap = analyzer["AirportsMap"]
+    MainGraph = analyzer["MainGraph"]  
+    vertices = gr.vertices(MainGraph)
+    sizeVertices = lt.size(vertices)
+    while pos<=sizeVertices:
+        verticeAtTheMoment = lt.getElement(vertices, pos)
+        verticesAdjacents = gr.adjacents(MainGraph, verticeAtTheMoment)
+        NumberOfverticesAdjacents = lt.size(verticesAdjacents)
+        if NumberOfverticesAdjacents>0:
+            DataList = lt.newList("ARRAY_LIST")
+            NumberOfAirports +=1
+            EntryData = mp.get(AirportsMap, verticeAtTheMoment)                #El data es el IATA
+            Data = me.getValue(EntryData)
+            EntryName = mp.get(Data, "Name")
+            Name = me.getValue(EntryName)
+            EntryCity = mp.get(Data, "City")
+            City = me.getValue(EntryCity)
+            EntryCountry = mp.get(Data, "Country")
+            Country = me.getValue(EntryCountry)
+            print(Country)
+            lt.addLast(DataList, verticeAtTheMoment)
+            lt.addLast(DataList, Name)
+            lt.addLast(DataList, City)
+            lt.addLast(DataList, Country)
+            om.put(TreeWAirports, NumberOfverticesAdjacents, DataList)
+        pos+=1
+    DataInOrder = re.inorder(TreeWAirports)
+    return NumberOfAirports, DataInOrder
+
 def REQ2(analyzer, airport1, airport2):
     MainGraph = analyzer["MainGraph"]
     kosaraju_scc = scc.KosarajuSCC(MainGraph)
@@ -231,6 +268,10 @@ def homonymsREQ3(analyzer, city1, city2):
     mp.put(homonyms_map, "destination", destination_homonyms)
 
     return homonyms_map
+
+def REQ4(analyzer, Origin, miles):
+    MainGraph = analyzer["MainGraph"]
+    MSTMainGraph = pr.PrimMST(MainGraph)
 
 
 # Funciones utilizadas para comparar elementos dentro de una lista
