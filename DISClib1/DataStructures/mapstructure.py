@@ -25,8 +25,10 @@
  *
  """
 
+
 import config
-from DISClib.DataStructures import mapstructure as ht
+from DISClib.DataStructures import chaininghashtable as cht
+from DISClib.DataStructures import probehashtable as pht
 assert config
 
 """
@@ -37,13 +39,12 @@ assert config
 """
 
 
-def newMap(numelements=17,
-           prime=109345121,
-           maptype='CHAINING',
-           loadfactor=0.5,
-           comparefunction=None):
+def newMap(numelements,
+           prime,
+           maptype,
+           loadfactor,
+           comparefunction):
     """Crea una tabla de simbolos (map) sin orden
-
     Args:
         numelements: Tamaño inicial de la tabla
         prime: Número primo utilizado en la función MAD
@@ -55,7 +56,16 @@ def newMap(numelements=17,
     Raises:
         Exception
     """
-    return ht.newMap(numelements, prime, maptype, loadfactor, comparefunction)
+    if (maptype == 'CHAINING'):
+        return cht.newMap(numelements,
+                          prime,
+                          loadfactor,
+                          comparefunction)
+    else:
+        return pht.newMap(numelements,
+                          prime,
+                          loadfactor,
+                          comparefunction)
 
 
 def put(map, key, value):
@@ -71,7 +81,10 @@ def put(map, key, value):
     Raises:
         Exception
     """
-    return ht.put(map, key, value)
+    if (map['type'] == 'CHAINING'):
+        return cht.put(map, key, value)
+    else:
+        return pht.put(map, key, value)
 
 
 def get(map, key):
@@ -85,7 +98,10 @@ def get(map, key):
     Raises:
         Exception
     """
-    return ht.get(map, key)
+    if (map['type'] == 'CHAINING'):
+        return cht.get(map, key)
+    else:
+        return pht.get(map, key)
 
 
 def remove(map, key):
@@ -99,7 +115,10 @@ def remove(map, key):
     Raises:
         Exception
     """
-    return ht.remove(map, key)
+    if (map['type'] == 'CHAINING'):
+        return cht.remove(map, key)
+    else:
+        return pht.remove(map, key)
 
 
 def contains(map, key):
@@ -114,11 +133,14 @@ def contains(map, key):
     Raises:
         Exception
     """
-    return ht.contains(map, key)
+    if (map['type'] == 'CHAINING'):
+        return cht.contains(map, key)
+    else:
+        return pht.contains(map, key)
 
 
 def size(map):
-    """  Retorna  el número de entradas en la tabla de hash.
+    """  Retorna el número de entradas en la tabla de hash.
     Args:
         map: El map
     Returns:
@@ -126,7 +148,10 @@ def size(map):
     Raises:
         Exception
     """
-    return ht.size(map)
+    if (map['type'] == 'CHAINING'):
+        return cht.size(map)
+    else:
+        return pht.size(map)
 
 
 def isEmpty(map):
@@ -139,7 +164,10 @@ def isEmpty(map):
     Raises:
         Exception
     """
-    return ht.isEmpty(map)
+    if (map['type'] == 'CHAINING'):
+        return cht.isEmpty(map)
+    else:
+        return pht.isEmpty(map)
 
 
 def keySet(map):
@@ -153,7 +181,10 @@ def keySet(map):
     Raises:
         Exception
     """
-    return ht.keySet(map)
+    if (map['type'] == 'CHAINING'):
+        return cht.keySet(map)
+    else:
+        return pht.keySet(map)
 
 
 def valueSet(map):
@@ -167,4 +198,7 @@ def valueSet(map):
     Raises:
         Exception
     """
-    return ht.valueSet(map)
+    if (map['type'] == 'CHAINING'):
+        return cht.valueSet(map)
+    else:
+        return pht.valueSet(map)

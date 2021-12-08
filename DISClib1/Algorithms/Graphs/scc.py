@@ -154,10 +154,6 @@ def reverseGraph(graph):
         error.reraise(exp, 'scc:reverse')
 
 
-def comparenames(searchname, element):
-    return (searchname == element['key'])
-
-
 def reverseGraph2(graph):
     """
         Retornar el reverso del grafo graph
@@ -171,10 +167,17 @@ def reverseGraph2(graph):
         lstvert = g.vertices(graph)
         for vert in lt.iterator(lstvert):
             g.insertVertex(greverse, vert)
+        i=1
         for vert in lt.iterator(lstvert):
             lstadj = g.adjacents(graph, vert)
             for adj in lt.iterator(lstadj):
                 g.addEdge(greverse, adj, vert)
+                print(adj, vert, i)
+                i+=1
         return greverse
     except Exception as exp:
         error.reraise(exp, 'scc:reverse')
+
+
+def comparenames(searchname, element):
+    return (searchname == element['key'])

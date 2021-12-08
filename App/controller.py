@@ -6,6 +6,7 @@ Daniel Hernández Pineda
 
 """
 
+from App.model import CreateReversedMainGraphREQ5
 import config as cf
 import model
 import csv
@@ -29,6 +30,7 @@ def loadData(analyzer, file_size):
     loadAirports(analyzer, file_size)
     loadRoutes(analyzer, file_size)
     loadCities(analyzer)
+    CreateReversedMainGraphREQ5(analyzer)
 
 
 def loadAirports(analyzer, file_size):

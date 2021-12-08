@@ -90,6 +90,31 @@ def chooseHomonymsREQ3(homonyms_map, city1, city2):
     return origin, destination
 
 
+def printReq3(distance, path, origin_airport, destination_airport, origin_city, destination_city):
+    
+    print("El aeropuerto de salida más cercano a " + origin_city["name"] + " es: ")
+    print("Nombre - " + origin_airport["Name"])
+    print("Ciudad - " + origin_airport["City"])
+    print("País - " + origin_airport["Country"])
+
+    print("\nEl aeropuerto de llegada más cercano a " + destination_city["name"] + " es: ")
+    print("Nombre - " + destination_airport["Name"])
+    print("Ciudad - " + destination_airport["City"])
+    print("País - " + destination_airport["Country"])
+
+    print("\nEl camino recorrido es: ")
+    i = 1
+    while i<=lt.size(path):
+        route = lt.getElement(path, i)
+        print(route["vertexA"] + " --> " + route["vertexB"] + " // Distancia: " + str(route["weight"]) + " km")
+        i+=1
+
+    print("\nLa distancia total del recorrido, incluyendo las distancias de las ciudades a los aeropuertos, es:")
+    print(str(distance) + " kilómetros")
+
+
+
+
 while True:
     printMenu()
     inputs = input('Seleccione una opción para continuar\n')
@@ -170,16 +195,16 @@ while True:
         city2 = "Lisbon"
 
         homonyms_map = controller.homonymsREQ3(analyzer, city1, city2)
-        origin,destination = chooseHomonymsREQ3(homonyms_map, city1, city2)
+        origin_city, destination_city = chooseHomonymsREQ3(homonyms_map, city1, city2)
         
         start_time = process_time()
-        req4 = controller.REQ3(analyzer, origin, destination)
+        distance, path, origin_airport, destination_airport = controller.REQ3(analyzer, origin_city, destination_city)
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
 
         print("\n\n=============== Requerimiento Número 3 ===============")
         print("Tiempo de ejecución: " + str(running_time) + " milisegundos\n")
-
+        printReq3(distance, path, origin_airport, destination_airport, origin_city, destination_city)
 
 
     #Requerimiento 4
@@ -200,13 +225,15 @@ while True:
         airport = "DXB"
 
         start_time = process_time()
-        req5, indegree, outdegree = controller.REQ5(analyzer, airport)
+        in_req5, out_req5, req5, indegree, outdegree = controller.REQ5(analyzer, airport)
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
 
         print("\n\n=============== Requerimiento Número 5 ===============")
         print("Tiempo de ejecución: " + str(running_time) + " milisegundos\n")
         print()
+        print(in_req5["elements"])
+        print(out_req5["elements"])
         print(req5["elements"])
         print("Indegree: " + str(indegree))
         print("Outdegree: " + str(outdegree))

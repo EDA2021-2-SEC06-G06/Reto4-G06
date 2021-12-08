@@ -34,12 +34,13 @@ def newAnalyzer():
                "AirportsMap": None,
                "RoutesMap": None,
                "CitiesMap": None,
-               "CoordinateTreeReq3": None} 
+               "CoordinateTreeReq3": None,
+               "ReversedMainGraphReq5": None} 
 
     analyzer["MainGraph"] = gr.newGraph(datastructure='ADJ_LIST',
                                        directed=True,
-                                       size=100000)
-                                       #comparefunction=compareStopIds)
+                                       size=1000000,
+                                       comparefunction=compareStopIds)
                                        
     analyzer["SecondaryGraph"] = gr.newGraph(datastructure='ADJ_LIST',
                                             directed=False,
@@ -100,6 +101,10 @@ def AddCity(analyzer, city):
         entry = mp.get(CitiesMap, city_name)
         homonym_cities = me.getValue(entry)
         mp.put(homonym_cities, city_id, city_data)
+
+
+def CreateReversedMainGraphREQ5(analyzer):
+    analyzer["ReversedMainGraphReq5"] = scc.reverseGraph(analyzer["MainGraph"])
 
 
 def AddRouteND(analyzer, route):
@@ -242,6 +247,7 @@ def REQ2(analyzer, airport1, airport2):
     return num_clusters, same_cluster
 
 
+#Requerimiento 3
 def homonymsREQ3(analyzer, city1, city2):
     CitiesMap = analyzer["CitiesMap"]
     origin_homonyms = me.getValue(mp.get(CitiesMap, city1))
@@ -312,50 +318,89 @@ def REQ3(analyzer, origin_city, destination_city):
     destination_airport, destination_airport_distance = findNearestAirportREQ3(analyzer, destination_city)
 
     search = djk.Dijkstra(analyzer["MainGraph"], origin_airport["IATA"])
+    path = djk.pathTo(search, destination_airport["IATA"])
     distance_between_airports = djk.distTo(search, destination_airport["IATA"])
+    
+    total_distance = round(origin_airport_distance + destination_airport_distance + distance_between_airports,3)
 
-    total_distance = origin_airport_distance + destination_airport_distance + distance_between_airports
+    return total_distance, path, origin_airport, destination_airport
 
-    return total_distance
+
+#Requerimiento 5
+def getUnrepeatedREQ5(in_affected, out_affected):
+    affected_map = mp.newMap()
+
+    size_in = lt.size(in_affected)
+    pos_in = 1
+
+    while pos_in <= size_in:
+        airport = lt.getElement(in_affected, pos_in)
+        mp.put(affected_map, airport, 0)
+        pos_in +=1
+
+
+    size_out = lt.size(out_affected)
+    pos_out = 1
+
+    while pos_out <= size_out:
+        airport = lt.getElement(out_affected, pos_out)
+        mp.put(affected_map, airport, 0)
+        pos_out +=1
+
+    affected = mp.keySet(affected_map)
+    
+    return affected
 
 
 def REQ5(analyzer, airport):
     MainGraph = analyzer["MainGraph"]
-    SecondaryGraph = analyzer["SecondaryGraph"]
+    ReversedMainGraph = analyzer["ReversedMainGraphReq5"]
     affected_routes = gr.adjacentEdges(MainGraph, airport)
     
-    affected = gr.adjacents(SecondaryGraph, airport)
+    in_affected = gr.adjacents(ReversedMainGraph, airport)
+    out_affected = gr.adjacents(MainGraph, airport)
     indegree = gr.indegree(MainGraph, airport)
     outdegree = gr.outdegree(MainGraph, airport)
 
-    """
-    num_routes = lt.size(affected_routes)
-    i=1
-    while i<=num_routes:
-        route = lt.getElement(affected_routes, i)
-        print(route)
-        i+=1"""
+    affected = getUnrepeatedREQ5(in_affected, out_affected)
 
-    return affected, indegree, outdegree
-
-
+    return in_affected, out_affected, affected, indegree, outdegree
 
 
 # Funciones utilizadas para comparar elementos dentro de una lista
 
 # Funciones de ordenamiento
 
+# Funciones de comparacion
+def compareStopIds(stop, keyvaluestop):
+    """
+    Compara dos estaciones
+    """
+    stopcode = keyvaluestop['key']
+    if (stop == stopcode):
+        return 0
+    elif (stop > stopcode):
+        return 1
+    else:
+        return -1
 
-#PRUEBA
-test_graph = gr.newGraph(datastructure='ADJ_LIST', directed=True, size=10)
+"""#PRUEBA
+test_graph = gr.newGraph(datastructure='ADJ_LIST', directed=True, size=50)
 
 gr.insertVertex(test_graph, "A")
 gr.insertVertex(test_graph, "B")
 gr.insertVertex(test_graph, "C")
+gr.insertVertex(test_graph, "D")
 
 gr.addEdge(test_graph, "A", "B", 10)
-gr.addEdge(test_graph, "B", "C", 20)
+gr.addEdge(test_graph, "B", "C", 50)
 
-search1 = djk.Dijkstra(test_graph, "A")
+#search1 = djk.Dijkstra(test_graph, "A")
+#print("Distancia entre A y C:", djk.distTo(search1, "C"))
+reversed_test = scc.reverseGraph2(test_graph)
 
-print("Distancia entre A y C:", djk.distTo(search1, "C"))
+adj1 = gr.adjacents(test_graph, "B")
+adj2 = gr.adjacents(reversed_test, "B")
+
+print(adj1)
+print(adj2)"""

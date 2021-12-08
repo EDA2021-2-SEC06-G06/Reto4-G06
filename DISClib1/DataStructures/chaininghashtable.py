@@ -25,6 +25,7 @@
  *
  """
 
+
 import random as rd
 import math
 import config
@@ -34,8 +35,10 @@ from DISClib.Utils import error as error
 assert config
 
 """
-Implementación de una tabla de hash, utilizando linear probing como
-mecanismo de manejo de colisiones.
+Implementación de una tabla de hash, utilizando Separate Chaining como
+mecanismo de manejo de colisiones.  Esta implementación crea una lista
+de tamaño capacity.  En cada posición de la lista, se crea una lista
+vacia.
 
 Este código está basado en las implementaciones propuestas en:
 - Algorithms, 4th Edition.  R. Sedgewick
@@ -54,8 +57,8 @@ def newMap(numelements, prime, loadfactor, comparefunction):
     Args:
         numelements: Tamaño inicial de la tabla
         prime: Número primo utilizado en la función MAD
-        loadfactor: Factor de carga maximo de la tabla
-        comparefunction: Funcion de comparación entre llaves
+        loadfactor: Factor de carga inicial de la tabla
+        cmpfunc: Funcion de comparación entre llaves
     Returns:
         Un nuevo map
     Raises:
@@ -70,11 +73,10 @@ def newMap(numelements, prime, loadfactor, comparefunction):
                      'scale': scale,
                      'shift': shift,
                      'table': None,
-                     'currentfactor': 0,
-                     'limitfactor': loadfactor,
-                     'comparefunction': None,
                      'size': 0,
-                     'type': 'PROBING'}
+                     'limitfactor': loadfactor,
+                     'currentfactor': 0,
+                     'type': 'CHAINING'}
         if(comparefunction is None):
             cmpfunc = defaultcompare
         else:
@@ -83,40 +85,12 @@ def newMap(numelements, prime, loadfactor, comparefunction):
         hashtable['table'] = lt.newList(datastructure='ARRAY_LIST',
                                         cmpfunction=cmpfunc)
         for _ in range(capacity):
-            entry = me.newMapEntry(None, None)
-            lt.addLast(hashtable['table'], entry)
+            bucket = lt.newList(datastructure='SINGLE_LINKED',
+                                cmpfunction=hashtable['comparefunction'])
+            lt.addLast(hashtable['table'], bucket)
         return hashtable
     except Exception as exp:
-        error.reraise(exp, 'Probe:newMap')
-
-
-def put(map, key, value):
-    """ Ingresa una pareja llave,valor a la tabla de hash.
-    Si la llave ya existe en la tabla, se reemplaza el valor
-
-    Args:
-        map: El map a donde se guarda la pareja
-        key: la llave asociada a la pareja
-        value: el valor asociado a la pareja
-    Returns:
-        El map
-    Raises:
-        Exception
-    """
-    try:
-        hash = hashValue(map, key)      # Se obtiene el hashcode de la llave
-        entry = me.newMapEntry(key, value)
-        pos = findSlot(map, key, hash, map['comparefunction'])
-        lt.changeInfo(map['table'], abs(pos), entry)
-        if (pos < 0):           # Se reemplaza el valor con el nuevo valor
-            map['size'] += 1
-            map['currentfactor'] = map['size'] / map['capacity']
-
-        if (map['currentfactor'] >= map['limitfactor']):
-            rehash(map)
-        return map
-    except Exception as exp:
-        error.reraise(exp, 'Probe:put')
+        error.reraise(exp, 'Chain:newMap')
 
 
 def contains(map, key):
@@ -133,13 +107,47 @@ def contains(map, key):
     """
     try:
         hash = hashValue(map, key)
-        pos = findSlot(map, key, hash, map['comparefunction'])
-        if (pos > 0):
+        bucket = lt.getElement(map['table'], hash)
+        pos = lt.isPresent(bucket, key)
+        if pos > 0:
             return True
         else:
             return False
     except Exception as exp:
-        error.reraise(exp, 'Probe:contains')
+        error.reraise(exp, 'Chain:contains')
+
+
+def put(map, key, value):
+    """ Ingresa una pareja llave,valor a la tabla de hash.
+    Si la llave ya existe en la tabla, se reemplaza el valor
+
+    Args:
+        map: El map a donde se guarda la pareja
+        key: la llave asociada a la pareja
+        value: el valor asociado a la pareja
+    Returns:
+        El map
+    Raises:
+        Exception
+    """
+    try:
+        hash = hashValue(map, key)
+        bucket = lt.getElement(map['table'], hash)
+        entry = me.newMapEntry(key, value)
+        pos = lt.isPresent(bucket, key)
+        if pos > 0:    # La pareja ya exista, se reemplaza el valor
+            lt.changeInfo(bucket, pos, entry)
+        else:
+            lt.addLast(bucket, entry)   # La llave no existia
+            map['size'] += 1
+            map['currentfactor'] = map['size'] / map['capacity']
+
+        if (map['currentfactor'] >= map['limitfactor']):
+            rehash(map)
+
+        return map
+    except Exception as exp:
+        error.reraise(exp, 'Chain:put')
 
 
 def get(map, key):
@@ -155,14 +163,14 @@ def get(map, key):
     """
     try:
         hash = hashValue(map, key)
-        pos = findSlot(map, key, hash, map['comparefunction'])
+        bucket = lt.getElement(map['table'], hash)
+        pos = lt.isPresent(bucket, key)
         if pos > 0:
-            element = lt.getElement(map['table'], pos)
-            return element
+            return lt.getElement(bucket, pos)
         else:
             return None
     except Exception as exp:
-        error.reraise(exp, 'Probe:get')
+        error.reraise(exp, 'Chain:get')
 
 
 def remove(map, key):
@@ -178,14 +186,15 @@ def remove(map, key):
     """
     try:
         hash = hashValue(map, key)
-        pos = findSlot(map, key, hash, map['comparefunction'])
-        if pos > 0:
-            entry = me.newMapEntry('__EMPTY__', '__EMPTY__')
-            lt.changeInfo(map['table'], pos, entry)
-            map['size'] -= 1
+        bucket = lt.getElement(map['table'], hash)
+        if (bucket is not None):
+            pos = lt.isPresent(bucket, key)
+            if pos > 0:
+                lt.deleteElement(bucket, pos)
+                map['size'] -= 1
         return map
     except Exception as exp:
-        error.reraise(exp, 'Probe:remove')
+        error.reraise(exp, 'Chain:remove')
 
 
 def size(map):
@@ -197,10 +206,7 @@ def size(map):
     Raises:
         Exception
     """
-    try:
-        return map['size']
-    except Exception as exp:
-        error.reraise(exp, 'Probe:size')
+    return map['size']
 
 
 def isEmpty(map):
@@ -214,15 +220,16 @@ def isEmpty(map):
         Exception
     """
     try:
+        bucket = lt.newList()
         empty = True
         for pos in range(lt.size(map['table'])):
-            entry = lt.getElement(map['table'], pos+1)
-            if (entry['key'] is not None and entry['key'] != '__EMPTY__'):
+            bucket = lt.getElement(map['table'], pos+1)
+            if lt.isEmpty(bucket) is False:
                 empty = False
                 break
         return empty
     except Exception as exp:
-        error.reraise(exp, 'Probe:isEmpty')
+        error.reraise(exp, 'Chain:isempty')
 
 
 def keySet(map):
@@ -237,14 +244,16 @@ def keySet(map):
         Exception
     """
     try:
-        ltset = lt.newList()
+        ltset = lt.newList('SINGLE_LINKED', map['comparefunction'])
         for pos in range(lt.size(map['table'])):
-            entry = lt.getElement(map['table'], pos+1)
-            if (entry['key'] is not None and entry['key'] != '__EMPTY__'):
-                lt.addLast(ltset, entry['key'])
+            bucket = lt.getElement(map['table'], pos+1)
+            if(not lt.isEmpty(bucket)):
+                for element in range(lt.size(bucket)):
+                    entry = lt.getElement(bucket, element+1)
+                    lt.addLast(ltset, entry['key'])
         return ltset
     except Exception as exp:
-        error.reraise(exp, 'Probe:keyset')
+        error.reraise(exp, 'Chain:keyset')
 
 
 def valueSet(map):
@@ -259,19 +268,49 @@ def valueSet(map):
         Exception
     """
     try:
-        ltset = lt.newList()
+        ltset = lt.newList('SINGLE_LINKED', map['comparefunction'])
         for pos in range(lt.size(map['table'])):
-            entry = lt.getElement(map['table'], pos+1)
-            if (entry['value'] is not None and entry['value'] != '__EMPTY__'):
-                lt.addLast(ltset, entry['value'])
+            bucket = lt.getElement(map['table'], pos+1)
+            if (not lt.isEmpty(bucket)):
+                for element in range(lt.size(bucket)):
+                    entry = lt.getElement(bucket, element+1)
+                    lt.addLast(ltset, entry['value'])
         return ltset
     except Exception as exp:
-        error.reraise(exp, 'Probe:valueset')
+        error.reraise(exp, 'Chain, valueset')
 
 
 # __________________________________________________________________
 #       Helper Functions
 # __________________________________________________________________
+
+
+def rehash(map):
+    """
+    Se aumenta la capacida de la tabla al doble y se hace
+    rehash de todos los elementos de la tabla
+    """
+    try:
+        newtable = lt.newList('ARRAY_LIST', map['comparefunction'])
+        capacity = nextPrime(map['capacity']*2)
+        oldtable = map['table']
+        for _ in range(capacity):
+            bucket = lt.newList(datastructure='SINGLE_LINKED',
+                                cmpfunction=map['comparefunction'])
+            lt.addLast(newtable, bucket)
+        map['size'] = 0
+        map['currentfactor'] = 0
+        map['table'] = newtable
+        map['capacity'] = capacity
+        for pos in range(1, lt.size(oldtable)+1):
+            bucket = lt.getElement(oldtable, pos)
+            if (lt.size(bucket) > 0):
+                for posbucket in range(1, lt.size(bucket)+1):
+                    entry = lt.getElement(bucket, posbucket)
+                    put(map, entry['key'], entry['value'])
+        return map
+    except Exception as exp:
+        error.reraise(exp, "Chain:rehash")
 
 
 def hashValue(table, key):
@@ -283,93 +322,13 @@ def hashValue(table, key):
     p es un primo mayor a M,
     a y b enteros aleatoreos dentro del intervalo [0,p-1], con a>0
     """
-    try:
-        h = (hash(key))
-        a = table['scale']
-        b = table['shift']
-        p = table['prime']
-        m = table['capacity']
-        value = int((abs(a*h + b) % p) % m) + 1
-        return value
-    except Exception as exp:
-        error.reraise(exp, 'Probe:hashvalue')
-
-
-def findSlot(map, key, hashvalue, comparefunction):
-    """
-    Encuentra una posición libre en la tabla de hash.
-    map: la tabla de hash
-    key: la llave
-    hashvalue: La posición inicial de la llave
-    comparefunction: funcion de comparación para la búsqueda de la llave
-    """
-    try:
-        avail = -1          # no se ha encontrado una posición aun
-        searchpos = 0
-        table = map['table']
-        while (searchpos != hashvalue):  # Se busca una posición
-            if (searchpos == 0):
-                searchpos = hashvalue
-            if isAvailable(table, searchpos):  # La posición esta disponible
-                element = lt.getElement(table, searchpos)
-                if (avail == -1):
-                    avail = searchpos            # primera posición disponible
-                if element['key'] is None:       # nunca ha sido utilizada
-                    break
-            else:                    # la posicion no estaba disponible
-                element = lt.getElement(table, searchpos)
-                if comparefunction(key, element) == 0:  # Es la llave
-                    return searchpos               # Se  retorna la posicion
-            searchpos = (((searchpos) % map['capacity'])+1)
-        return -(avail)    # numero negativo indica que el elemento no estaba
-    except Exception as exp:
-        error.reraise(exp, 'Probe:findslot')
-
-
-def isAvailable(table, pos):
-    """
-    Informa si la posición pos esta disponible en la tabla de hash.
-    Se entiende que una posición está disponible
-    si su contenido es igual a None (no se ha usado esa posicion)
-    o a __EMPTY__ (la posición fue liberada)
-    """
-    try:
-        entry = lt.getElement(table, pos)
-        if (entry['key'] is None or entry['key'] == '__EMPTY__'):
-            return True
-        return False
-    except Exception as exp:
-        error.reraise(exp, 'Probe:isAvailable')
-
-
-def rehash(map):
-    """
-    Se aumenta la capacidad de la tabla al doble y se hace rehash de
-    todos los elementos de la tabla.
-    """
-    try:
-        newtable = lt.newList('ARRAY_LIST', map['comparefunction'])
-        capacity = nextPrime(map['capacity']*2)
-        for _ in range(capacity):
-            entry = me.newMapEntry(None, None)
-            lt.addLast(newtable, entry)
-        oldtable = map['table']
-        map['size'] = 0
-        map['currentfactor'] = 0
-        map['table'] = newtable
-        map['capacity'] = capacity
-        for pos in range(lt.size(oldtable)):
-            entry = lt.getElement(oldtable, pos+1)
-            if (entry['key'] is not None and entry['key'] != '__EMPTY__'):
-                hash = hashValue(map, entry['key'])
-                loc = findSlot(map, entry['key'], hash, map['comparefunction'])
-                lt.changeInfo(map['table'], abs(loc), entry)
-                if (loc < 0):
-                    map['size'] += 1
-                    map['currentfactor'] = map['size'] / map['capacity']
-        return map
-    except Exception as exp:
-        error.reraise(exp, 'Probe:rehash')
+    h = (hash(key))
+    a = table['scale']
+    b = table['shift']
+    p = table['prime']
+    m = table['capacity']
+    value = int((abs(a*h + b) % p) % m) + 1
+    return value
 
 
 # Function that returns True if n
