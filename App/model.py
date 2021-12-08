@@ -62,7 +62,10 @@ def newAnalyzer():
     return analyzer
 
 
+
+# ==============================================
 # Funciones para agregar informacion al catalogo
+# ==============================================
 def AddAirport(analyzer, airport):
     """
     Se añade cada aeropuerto al mapa de aeropuertos y a los grafos
@@ -125,7 +128,10 @@ def AddRouteND(analyzer, route):
     miaau=1
 
 
+
+# ==============================================
 # Funciones para creacion de datos
+# ==============================================
 def addAirportToMap(analyzer, airport):
     """
     Se añade un aeropuerto al un mapa de aeropuertos según su código IATA
@@ -165,20 +171,6 @@ def addAirportToTreeREQ3(analyzer, airport):
         #No hace falta verificar la entrada porque no hay dos aeropuertos en la misma coordenada    
 
 
-def addRouteToMainGraph(analyzer, route):
-    """
-    Se añade la ruta como un arco entre sus aeropuertos correspondientes
-    """    
-    MainGraph = analyzer["MainGraph"]
-    origin = route["Departure"]
-    destination = route["Destination"]
-    distance = float(route["distance_km"])
-
-    edge = gr.getEdge(MainGraph, origin, destination)
-    if edge is None:
-        gr.addEdge(MainGraph, origin, destination, distance)
-
-
 def addRouteToMap(analyzer, airport1, airport2, distance):
     """
     Se agrega una ruta entre dos aeropuertos al mapa de rutas
@@ -194,6 +186,20 @@ def addRouteToMap(analyzer, airport1, airport2, distance):
     else:
         airport1_map = me.getValue(airport1_entry)
         mp.put(airport1_map, airport2, distance)
+
+
+def addRouteToMainGraph(analyzer, route):
+    """
+    Se añade la ruta como un arco entre sus aeropuertos correspondientes
+    """    
+    MainGraph = analyzer["MainGraph"]
+    origin = route["Departure"]
+    destination = route["Destination"]
+    distance = float(route["distance_km"])
+
+    edge = gr.getEdge(MainGraph, origin, destination)
+    if edge is None:
+        gr.addEdge(MainGraph, origin, destination, distance)
 
 
 def addRouteToSecondaryGraph(analyzer, route):
@@ -235,7 +241,10 @@ def cityData(city):
     return city_data
 
 
+
+# ==============================================
 # Funciones de consulta
+# ==============================================
 
 #Requerimiento 2
 def REQ2(analyzer, airport1, airport2):
@@ -372,41 +381,3 @@ def REQ5(analyzer, airport):
 
     return affected, indegree, outdegree
 
-
-# Funciones utilizadas para comparar elementos dentro de una lista
-
-# Funciones de ordenamiento
-
-# Funciones de comparacion
-def compareStopIds(stop, keyvaluestop):
-    """
-    Compara dos estaciones
-    """
-    stopcode = keyvaluestop['key']
-    if (stop == stopcode):
-        return 0
-    elif (stop > stopcode):
-        return 1
-    else:
-        return -1
-
-"""#PRUEBA
-test_graph = gr.newGraph(datastructure='ADJ_LIST', directed=True, size=50)
-
-gr.insertVertex(test_graph, "A")
-gr.insertVertex(test_graph, "B")
-gr.insertVertex(test_graph, "C")
-gr.insertVertex(test_graph, "D")
-
-gr.addEdge(test_graph, "A", "B", 10)
-gr.addEdge(test_graph, "B", "C", 50)
-
-#search1 = djk.Dijkstra(test_graph, "A")
-#print("Distancia entre A y C:", djk.distTo(search1, "C"))
-reversed_test = scc.reverseGraph2(test_graph)
-
-adj1 = gr.adjacents(test_graph, "B")
-adj2 = gr.adjacents(reversed_test, "B")
-
-print(adj1)
-print(adj2)"""
