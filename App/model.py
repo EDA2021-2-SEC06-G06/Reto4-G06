@@ -17,8 +17,6 @@ from DISClib.Algorithms.Graphs import prim as pr
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Trees import traversal as re
 from DISClib.ADT import graph as gr
-from DISClib.Algorithms.Graphs import dfo
-from DISClib.Algorithms.Graphs import dfs
 from DISClib.Algorithms.Graphs import scc
 from DISClib.Algorithms.Graphs import dijsktra as djk
 from DISClib.DataStructures import edge as e
@@ -287,6 +285,7 @@ def DataREQ1(verticeAtTheMoment, analyzer, Connections):
     lt.addLast(DataList, Country)
     return DataList
 
+
 def DatatreeREQ1(TreeWAirports, Connection, DataList):
     entry = om.get(TreeWAirports, Connection)
     
@@ -300,9 +299,6 @@ def DatatreeREQ1(TreeWAirports, Connection, DataList):
         om.put(TreeWAirports, Connection, BigList)  
 
         
-
-#Requerimiento 2
-
 #Requerimiento 2
 def REQ2(analyzer, airport1, airport2):
     MainGraph = analyzer["MainGraph"]
@@ -391,12 +387,22 @@ def REQ3(analyzer, origin_city, destination_city):
 
 
 #Requerimiento  4
-def REQ4(analyzer, Origin, miles):
-    MainGraph = analyzer["MainGraph"]
-    MSTMainGraph = pr.PrimMST(MainGraph)
-    NumEdges = gr.numEdges(MSTMainGraph)
-    c=1
-    return NumEdges
+def REQ4(analyzer, miles):
+    SecondaryGraph = analyzer["SecondaryGraph"]
+    distance_km = miles*1.6
+    MST_search = pr.PrimMST(SecondaryGraph) #Elog(V)
+    mst_weight = round(pr.weightMST(SecondaryGraph, MST_search), 2) #E + V
+    mst_edges = MST_search["mst"]
+
+    possible_airports = mp.newMap(maptype="CHAINING", loadfactor=4)
+
+    for edge in lt.iterator(mst_edges): #Máximo E recorridos
+        mp.put(possible_airports, e.either(edge), None) #cte
+        mp.put(possible_airports, e.other(edge, e.either(edge)), None) #cte
+
+    num_airports = lt.size(mp.keySet(possible_airports)) #E
+
+    return num_airports, mst_weight, distance_km
 
 
 #Requerimiento 5

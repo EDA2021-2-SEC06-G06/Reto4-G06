@@ -62,6 +62,7 @@ def printGraphsInfo(analyzer):
     print("Número de aeropuertos: " + str(num_airports2))
     print("Número de rutas: " + str(num_routes2))
 
+
 def printReq1(DataInOrder):
     SizeDataInOrder = lt.size(DataInOrder)
     pos = SizeDataInOrder
@@ -97,7 +98,8 @@ def printReq1(DataInOrder):
                     if k==5:
                        break
         pos-=1
-        
+
+
 def printReq2(analyzer, IATA_airport1, IATA_airport2, num_clusters, same_cluster):
     AirportsMap = analyzer["AirportsMap"]
     print("\nNúmero de clusters en la red de aeropuertos: " + str(num_clusters))
@@ -223,7 +225,7 @@ while True:
     #Carga de datos
     if int(inputs) == 1:
         #file_size = input("Ingrese el sufijo del archivo que desea utilizar (small, large, 10pct...): ")
-        file_size = "small"
+        file_size = "large"
 
         print("Cargando información de los archivos ....")
         analyzer = initAnalyzer()
@@ -252,13 +254,15 @@ while True:
         print("Tiempo de ejecución: " + str(running_time) + " milisegundos")
         print("Hay "+str(NumberOfAirports)+" aeropuertos interconectados")
         printReq1(DataInOrder)
-       
+
 
 
     #Requerimiento 2
     elif int(inputs) == 20:
         #airport1 = input("Ingrese el código IATA del primer aeropuerto a consultar: ")
         #airport2 = input("Ingrese el código IATA del segundo aeropuerto a consultar: ")
+
+        #Para pruebas
         airport1 = "LED"
         airport2 = "RTP"
 
@@ -276,7 +280,6 @@ while True:
 
     #Requerimiento 3
     elif int(inputs) == 30:
-
         #city1 = input("Ingrese el nombre de la ciudad de origen: ")
         #city2 = input("Ingrese el nombre de la ciudad de destino: ")
 
@@ -300,18 +303,23 @@ while True:
 
     #Requerimiento 4
     elif int(inputs) == 40:
-        
-        Origin = input("Ingrese el nombre de la ciudad de origen: ")
-        miles = input("Ingrese la cantidad de millas disponibles: ")
+        #miles = float(input("Ingrese la cantidad de millas disponibles: "))
+
+        #Para pruebas
+        miles = 19850
 
         start_time = process_time()
-        req4 = controller.REQ4(analyzer, Origin, miles)
+        num_airports, weight, distance_km = controller.REQ4(analyzer, miles)
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
 
         print("\n=============== Requerimiento Número 4 ===============")
-        #print("Tiempo de ejecución: " + str(running_time) + " milisegundos")
-    
+        print("Tiempo de ejecución: " + str(running_time) + " milisegundos\n")
+
+        print("Número de aeropuertos posibles: " + str(num_airports))
+        print("Suma de la distancia entre aeropuertos: " + str(weight) + " km")
+        print("Distancia disponible: " + str(distance_km) + " km")
+
 
 
     #Requerimiento 5
