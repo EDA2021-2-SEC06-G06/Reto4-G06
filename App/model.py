@@ -6,8 +6,6 @@ Daniel Hernández Pineda
 
 """
 
-
-
 import config as cf
 from DISClib.Utils import error as error
 from DISClib.ADT import list as lt

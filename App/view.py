@@ -223,6 +223,8 @@ while True:
     elif int(inputs) == 20:
         #airport1 = input("Ingrese el código IATA del primer aeropuerto a consultar: ")
         #airport2 = input("Ingrese el código IATA del segundo aeropuerto a consultar: ")
+
+        #Para pruebas
         airport1 = "LED"
         airport2 = "RTP"
 
@@ -240,7 +242,6 @@ while True:
 
     #Requerimiento 3
     elif int(inputs) == 30:
-
         #city1 = input("Ingrese el nombre de la ciudad de origen: ")
         #city2 = input("Ingrese el nombre de la ciudad de destino: ")
 
