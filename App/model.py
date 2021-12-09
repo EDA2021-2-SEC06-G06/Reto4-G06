@@ -14,10 +14,10 @@ from DISClib.ADT import map as mp
 from DISClib.ADT import orderedmap as om
 from DISClib.DataStructures import mapentry as me
 from DISClib.ADT import graph as gr
-from DISClib.Algorithms.Graphs import dfo
 from DISClib.Algorithms.Graphs import dfs
 from DISClib.Algorithms.Graphs import scc
 from DISClib.Algorithms.Graphs import dijsktra as djk
+from DISClib.DataStructures import edge as e
 assert cf
 
 from haversine import haversine
@@ -361,11 +361,70 @@ def getUnrepeatedREQ5(in_affected, out_affected):
     return affected
 
 
-def removeVertexREQ5(analyzer, airport):
+def removeEdgeREQ5(graph, vertexa, vertexb):
+    """
+    Elimina el arco asociado a los vertices vertexa ---- vertexb
+
+    Args:
+        graph: El grafo sobre el que se ejecuta la operacion
+        vertexa: Vertice de inicio
+        vertexb: Vertice destino
+
+    Raises:
+        Exception
+    """
+    try:
+        element = mp.get(graph['vertices'], vertexa)
+        lst = element['value']
+        i = 1
+        lst_size = lt.size(lst)
+
+        while i<=lst_size: #E recorridos en el peor caso
+            edge = lt.getElement(lst, i)
+            if (graph['directed']):
+                if (e.either(edge) == vertexa) and ((e.other(edge, e.either(edge)) == vertexb)):
+                    lt.deleteElement(lst, i) #E recorridos en el peor caso
+                    break
+
+            elif(e.either(edge) == vertexa or (e.other(edge, e.either(edge)) == vertexa)):
+                if (e.either(edge) == vertexb or
+                   (e.other(edge, e.either(edge)) == vertexb)):
+                    lt.deleteElement(lst, i) #E recorridos en el peor caso
+                    break
+            i+=1
+        graph["edges"] -= 1
+        
+    except Exception as exp:
+        error.reraise(exp, 'ajlist:getedge')
+
+
+def removeVertexREQ5(analyzer, airport, in_affected, out_affected):
     MainGraph = analyzer["MainGraph"]
-    ReversedMainGraph = analyzer["ReversedMainGraphReq5"]
-    affected_in_routes = gr.adjacentEdges(ReversedMainGraph, airport)
-    affected_out_routes = gr.adjacentEdges(MainGraph, airport)
+    SecondaryGraph = analyzer["SecondaryGraph"]
+    num_in = lt.size(in_affected)
+    num_out = lt.size(out_affected)
+
+    #Eliminar el vértice y todas las rutas que salen de él
+    mp.remove(MainGraph["vertices"], airport) #Cte porque la lista 'table' es un arreglo
+    mp.remove(SecondaryGraph["vertices"], airport)
+    MainGraph["edges"] -= num_out
+
+    #Ajustar los indegree en el digrafo
+    mp.remove(MainGraph["indegree"], airport)
+    pos_out = 1
+    while pos_out<=num_out: #V recorridos en el peor caso
+        out_airport = lt.getElement(out_affected, pos_out)
+        actual_indegree = me.getValue(mp.get(MainGraph["indegree"], out_airport))
+        mp.put(MainGraph["indegree"], out_airport, actual_indegree-1)
+        pos_out += 1
+
+    #Eliminar las rutas que llegan al vértice desde los demás vértices
+    pos_in = 1
+    while pos_in <= num_in: #V recorridos en el peor caso
+        in_airport = lt.getElement(in_affected, pos_in)
+        removeEdgeREQ5(MainGraph, in_airport, airport) #E^2 recorridos en el peor caso
+        removeEdgeREQ5(SecondaryGraph, in_airport, airport) #E^2 recorridos en el peor caso
+        pos_in += 1
 
 
 def REQ5(analyzer, airport):
@@ -379,5 +438,7 @@ def REQ5(analyzer, airport):
 
     affected = getUnrepeatedREQ5(in_affected, out_affected)
 
+    removeVertexREQ5(analyzer, airport, in_affected, out_affected)
+    
     return affected, indegree, outdegree
 

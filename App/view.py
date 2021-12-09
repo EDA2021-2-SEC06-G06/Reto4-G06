@@ -293,8 +293,8 @@ while True:
         opcion5 = input("Digite 1 si así lo desea, o 0 de lo contrario: ")
 
         if opcion5=="1":
-            printGraphsInfo(analyzer)
-        
+            printGraphsInfo(analyzer)    
+
 
 
     else:
