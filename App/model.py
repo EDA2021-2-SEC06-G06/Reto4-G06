@@ -245,8 +245,7 @@ def REQ1(analyzer):
         verticeAtTheMoment = lt.getElement(vertices1, pos1)
         verticesoutdegree = gr.outdegree(MainGraph, verticeAtTheMoment)
         verticesindegree = gr.indegree(MainGraph, verticeAtTheMoment)          #Se encuentra el numero de arcos que entran y saen en cada nodo
-        Adjacents = gr.adjacents(SecondaryGraph,verticeAtTheMoment)  
-        SizeAdjacents = lt.size(Adjacents)  
+        
         
         if verticesindegree>0 and verticesoutdegree>0:                        #Se encuentran los vertices interconectados del grafo no dirigido
             NumberOfAirports +=1
