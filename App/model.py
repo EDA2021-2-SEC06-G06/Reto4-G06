@@ -17,14 +17,13 @@ from DISClib.Algorithms.Graphs import prim as pr
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Trees import traversal as re
 from DISClib.ADT import graph as gr
-from DISClib.ADT import orderedmap as om
 from DISClib.Algorithms.Graphs import dfo
 from DISClib.Algorithms.Graphs import dfs
 from DISClib.Algorithms.Graphs import scc
 from DISClib.Algorithms.Graphs import dijsktra as djk
 assert cf
 
-from haversine import haversine
+
 
 # ==============================================
 # Construccion de modelos
@@ -237,29 +236,35 @@ def REQ1(analyzer):
     NumberOfAirports = 0
     TreeWAirports = om.newMap(omaptype="RBT")
     MainGraph = analyzer["MainGraph"]
-    vertices1 = gr.vertices(MainGraph)          #Se sacan los veertices del grafo
+    SecondaryGraph = analyzer["SecondaryGraph"]
+    vertices1 = gr.vertices(MainGraph)          #Se sacan los vertices del grafo
     sizeVertices1 = lt.size(vertices1)
     
     while pos1<=sizeVertices1:
         verticeAtTheMoment = lt.getElement(vertices1, pos1)
         verticesoutdegree = gr.outdegree(MainGraph, verticeAtTheMoment)
         verticesindegree = gr.indegree(MainGraph, verticeAtTheMoment)          #Se encuentra el numero de arcos que entran y saen en cada nodo
-            
+        Adjacents = gr.adjacents(SecondaryGraph,verticeAtTheMoment)  
+        SizeAdjacents = lt.size(Adjacents)  
+        
         if verticesindegree>0 and verticesoutdegree>0:                        #Se encuentran los vertices interconectados del grafo no dirigido
             NumberOfAirports +=1
             Connections = verticesoutdegree+verticesindegree
             DataList = DataREQ1(verticeAtTheMoment, analyzer, Connections)
-            om.put(TreeWAirports, Connections, DataList)
+            DatatreeREQ1(TreeWAirports, Connections, DataList)
+        
 
         if verticesoutdegree>0 and verticesindegree==0:                           #Se encuentran los verces del grafo dirigido
             NumberOfAirports+=1
             DataList = DataREQ1(verticeAtTheMoment, analyzer, verticesoutdegree)
-            om.put(TreeWAirports, verticesoutdegree, DataList)
+            verticeAtTheMomentout  =  verticeAtTheMoment+"-Out"
+            DatatreeREQ1(TreeWAirports, verticesoutdegree, DataList)
 
         if verticesindegree>0 and verticesoutdegree==0:
             NumberOfAirports+=1
             DataList = DataREQ1(verticeAtTheMoment, analyzer, verticesindegree)
-            om.put(TreeWAirports, verticesindegree, DataList)
+            verticeAtTheMomentin = verticeAtTheMoment+"-in"
+            DatatreeREQ1(TreeWAirports, verticesindegree, DataList)
 
         pos1+=1
 
@@ -273,18 +278,29 @@ def DataREQ1(verticeAtTheMoment, analyzer, Connections):
     DataList = lt.newList("ARRAY_LIST")
     EntryData = mp.get(AirportsMap, verticeAtTheMoment)               
     Data = me.getValue(EntryData)
-    EntryName = mp.get(Data, "Name")
-    Name = me.getValue(EntryName)
-    EntryCity = mp.get(Data, "City")
-    City = me.getValue(EntryCity)
-    EntryCountry = mp.get(Data, "Country")
-    Country = me.getValue(EntryCountry)
+    City = Data["City"]
+    Name = Data["Name"]
+    Country = Data["Country"]
     lt.addLast(DataList, Connections)
     lt.addLast(DataList, verticeAtTheMoment)
     lt.addLast(DataList, Name)
     lt.addLast(DataList, City)
     lt.addLast(DataList, Country)
     return DataList
+
+def DatatreeREQ1(TreeWAirports, Connection, DataList):
+    entry = om.get(TreeWAirports, Connection)
+    
+    if entry is None: 
+        DataIn = lt.newList("ARRAY_LIST")
+        lt.addLast(DataIn, DataList)
+        om.put(TreeWAirports, Connection, DataIn )     
+    else:
+        BigList =  me.getValue(entry)
+        lt.addLast(BigList, DataList)
+        om.put(TreeWAirports, Connection, BigList)  
+
+        
 
 #Requerimiento 2
 

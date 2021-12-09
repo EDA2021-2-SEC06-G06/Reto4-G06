@@ -62,7 +62,42 @@ def printGraphsInfo(analyzer):
     print("Número de aeropuertos: " + str(num_airports2))
     print("Número de rutas: " + str(num_routes2))
 
-
+def printReq1(DataInOrder):
+    SizeDataInOrder = lt.size(DataInOrder)
+    pos = SizeDataInOrder
+    centinela =True
+    k=0
+    while pos>0 and centinela==True:
+        Element = lt.getElement(DataInOrder, pos)
+        SizeElement = lt.size(Element)
+        if k!=5:         
+            if SizeElement==1:
+                Element1=lt.getElement(Element,1)
+                Airport = lt.getElement(Element1,3)
+                City = lt.getElement(Element1,4)
+                Country = lt.getElement(Element1,5)
+                Iata = lt.getElement(Element1,2)
+                Connection = lt.getElement(Element1,1)
+                print("El aeropuerto de "+Airport+" esta ubicado en la ciudad de "+City+", en el pais de "+Country+", ademas su codgio IATA es "+Iata+" y cuenta con "+str(Connection)+" conexiones")
+                k+=1
+                if k==5:
+                    break
+            if SizeElement>1:
+                Pos1 = 1
+                while Pos1<=SizeElement:
+                    Element1=lt.getElement(Element,Pos1)
+                    Airport = lt.getElement(Element1,3)
+                    City = lt.getElement(Element1,4)
+                    Country = lt.getElement(Element1,5)
+                    Iata = lt.getElement(Element1,2)
+                    Connection = lt.getElement(Element1,1)
+                    print("El aeropuerto de "+Airport+" esta ubicado en la ciudad de "+City+", en el pais de "+Country+", ademas su codgio IATA es "+Iata+" y cuenta con "+str(Connection)+" conexiones")
+                    Pos1+=1
+                    k+=1
+                    if k==5:
+                       break
+        pos-=1
+        
 def printReq2(analyzer, IATA_airport1, IATA_airport2, num_clusters, same_cluster):
     AirportsMap = analyzer["AirportsMap"]
     print("\nNúmero de clusters en la red de aeropuertos: " + str(num_clusters))
@@ -216,7 +251,8 @@ while True:
         print("\n\n=============== Requerimiento Número 1 ===============")
         print("Tiempo de ejecución: " + str(running_time) + " milisegundos")
         print("Hay "+str(NumberOfAirports)+" aeropuertos interconectados")
-        print(DataInOrder)
+        printReq1(DataInOrder)
+       
 
 
     #Requerimiento 2
