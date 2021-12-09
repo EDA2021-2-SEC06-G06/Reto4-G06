@@ -225,7 +225,7 @@ while True:
     #Carga de datos
     if int(inputs) == 1:
         #file_size = input("Ingrese el sufijo del archivo que desea utilizar (small, large, 10pct...): ")
-        file_size = "large"
+        file_size = "small"
 
         print("Cargando información de los archivos ....")
         analyzer = initAnalyzer()

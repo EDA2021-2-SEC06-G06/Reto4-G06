@@ -22,7 +22,7 @@ from DISClib.Algorithms.Graphs import dijsktra as djk
 from DISClib.DataStructures import edge as e
 assert cf
 
-
+from haversine import haversine
 
 # ==============================================
 # Construccion de modelos
