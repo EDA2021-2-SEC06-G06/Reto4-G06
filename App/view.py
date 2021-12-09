@@ -186,12 +186,12 @@ def printReq3(distance, path, origin_airport, destination_airport, origin_city, 
     print("\nLa distancia total del recorrido, incluyendo las distancias de las ciudades a los aeropuertos, es: " + str(distance) + " kilómetros")
 
 
-def printReq5(analyzer, airport, indegree, outdegree, affected):
+def printReq5(analyzer, airport, indegree, outdegree, s_degree, affected):
     num_affected = lt.size(affected)
 
     print("Número de afectados con rutas HACIA " + airport + ": " + str(indegree))
-
-    print("\nNúmero de afectados con rutas DESDE " + airport + ": " + str(outdegree))
+    print("Número de afectados con rutas DESDE " + airport + ": " + str(outdegree))
+    print("Número de afectados mutuamente conectados con " + airport + ": " + str(s_degree))
 
     print("\n********************")
     print("Total de afectados: " + str(num_affected))
@@ -224,8 +224,8 @@ while True:
 
     #Carga de datos
     if int(inputs) == 1:
-        #file_size = input("Ingrese el sufijo del archivo que desea utilizar (small, large, 10pct...): ")
-        file_size = "small"
+        file_size = input("Ingrese el sufijo del archivo que desea utilizar (small, large, 10pct...): ")
+        #file_size = "small"
 
         print("Cargando información de los archivos ....")
         analyzer = initAnalyzer()
@@ -243,12 +243,10 @@ while True:
 
     #Requerimiento 1
     elif int(inputs) == 10:
-
         start_time = process_time()
         NumberOfAirports, DataInOrder = controller.REQ1(analyzer)
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
-
 
         print("\n\n=============== Requerimiento Número 1 ===============")
         print("Tiempo de ejecución: " + str(running_time) + " milisegundos")
@@ -259,12 +257,12 @@ while True:
 
     #Requerimiento 2
     elif int(inputs) == 20:
-        #airport1 = input("Ingrese el código IATA del primer aeropuerto a consultar: ")
-        #airport2 = input("Ingrese el código IATA del segundo aeropuerto a consultar: ")
+        airport1 = input("Ingrese el código IATA del primer aeropuerto a consultar: ")
+        airport2 = input("Ingrese el código IATA del segundo aeropuerto a consultar: ")
 
         #Para pruebas
-        airport1 = "LED"
-        airport2 = "RTP"
+        #airport1 = "LED"
+        #airport2 = "RTP"
 
         start_time = process_time()
         num_clusters, same_cluster = controller.REQ2(analyzer, airport1, airport2)
@@ -280,12 +278,12 @@ while True:
 
     #Requerimiento 3
     elif int(inputs) == 30:
-        #city1 = input("Ingrese el nombre de la ciudad de origen: ")
-        #city2 = input("Ingrese el nombre de la ciudad de destino: ")
+        city1 = input("Ingrese el nombre de la ciudad de origen: ")
+        city2 = input("Ingrese el nombre de la ciudad de destino: ")
 
         #Para pruebas
-        city1 = "Saint Petersburg"
-        city2 = "Lisbon"
+        #city1 = "Saint Petersburg"
+        #city2 = "Lisbon"
 
         homonyms_map = controller.homonymsREQ3(analyzer, city1, city2)
         origin_city, destination_city = chooseHomonymsREQ3(homonyms_map, city1, city2)
@@ -303,10 +301,10 @@ while True:
 
     #Requerimiento 4
     elif int(inputs) == 40:
-        #miles = float(input("Ingrese la cantidad de millas disponibles: "))
+        miles = float(input("Ingrese la cantidad de millas disponibles: "))
 
         #Para pruebas
-        miles = 19850
+        #miles = 19850
 
         start_time = process_time()
         num_airports, weight, distance_km = controller.REQ4(analyzer, miles)
@@ -324,19 +322,19 @@ while True:
 
     #Requerimiento 5
     elif int(inputs) == 50:
-        #airport = input("Ingrese el IATA del aeropuerto que desea verificar: ")
+        airport = input("Ingrese el IATA del aeropuerto que desea verificar: ")
 
         #Para pruebas
-        airport = "DXB"
+        #airport = "DXB"
 
         start_time = process_time()
-        req5, indegree, outdegree = controller.REQ5(analyzer, airport)
+        req5, indegree, outdegree, s_degree = controller.REQ5(analyzer, airport)
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
 
         print("\n=============== Requerimiento Número 5 ===============")
         print("Tiempo de ejecución: " + str(running_time) + " milisegundos\n")
-        printReq5(analyzer, airport, indegree, outdegree, req5)
+        printReq5(analyzer, airport, indegree, outdegree, s_degree, req5)
 
         print("\n¿Desea verificar la nueva estructura del grafo tras eliminar el aeropuerto " + airport + "?")
         opcion5 = input("Digite 1 si así lo desea, o 0 de lo contrario: ")

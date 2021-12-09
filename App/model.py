@@ -235,7 +235,6 @@ def REQ1(analyzer):
     NumberOfAirports = 0
     TreeWAirports = om.newMap(omaptype="RBT")
     MainGraph = analyzer["MainGraph"]
-    SecondaryGraph = analyzer["SecondaryGraph"]
     vertices1 = gr.vertices(MainGraph)          #Se sacan los vertices del grafo
     sizeVertices1 = lt.size(vertices1)
     
@@ -244,24 +243,20 @@ def REQ1(analyzer):
         verticesoutdegree = gr.outdegree(MainGraph, verticeAtTheMoment)
         verticesindegree = gr.indegree(MainGraph, verticeAtTheMoment)          #Se encuentra el numero de arcos que entran y saen en cada nodo
         
-        
         if verticesindegree>0 and verticesoutdegree>0:                        #Se encuentran los vertices interconectados del grafo no dirigido
             NumberOfAirports +=1
             Connections = verticesoutdegree+verticesindegree
             DataList = DataREQ1(verticeAtTheMoment, analyzer, Connections)
             DatatreeREQ1(TreeWAirports, Connections, DataList)
         
-
         if verticesoutdegree>0 and verticesindegree==0:                           #Se encuentran los verces del grafo dirigido
             NumberOfAirports+=1
             DataList = DataREQ1(verticeAtTheMoment, analyzer, verticesoutdegree)
-            verticeAtTheMomentout  =  verticeAtTheMoment+"-Out"
             DatatreeREQ1(TreeWAirports, verticesoutdegree, DataList)
 
         if verticesindegree>0 and verticesoutdegree==0:
             NumberOfAirports+=1
             DataList = DataREQ1(verticeAtTheMoment, analyzer, verticesindegree)
-            verticeAtTheMomentin = verticeAtTheMoment+"-in"
             DatatreeREQ1(TreeWAirports, verticesindegree, DataList)
 
         pos1+=1
@@ -454,15 +449,16 @@ def removeEdgeREQ5(graph, vertexa, vertexb):
             if (graph['directed']):
                 if (e.either(edge) == vertexa) and ((e.other(edge, e.either(edge)) == vertexb)):
                     lt.deleteElement(lst, i) #E recorridos en el peor caso
+                    graph["edges"] -= 1
                     break
 
             elif(e.either(edge) == vertexa or (e.other(edge, e.either(edge)) == vertexa)):
                 if (e.either(edge) == vertexb or
                    (e.other(edge, e.either(edge)) == vertexb)):
                     lt.deleteElement(lst, i) #E recorridos en el peor caso
+                    graph["edges"] -= 1
                     break
             i+=1
-        graph["edges"] -= 1
         
     except Exception as exp:
         error.reraise(exp, 'ajlist:getedge')
@@ -499,16 +495,19 @@ def removeVertexREQ5(analyzer, airport, in_affected, out_affected):
 
 def REQ5(analyzer, airport):
     MainGraph = analyzer["MainGraph"]
+    SecondaryGraph = analyzer["SecondaryGraph"]
     ReversedMainGraph = analyzer["ReversedMainGraphReq5"]
     
     in_affected = gr.adjacents(ReversedMainGraph, airport)
     out_affected = gr.adjacents(MainGraph, airport)
+    secondary_affected = gr.adjacents(SecondaryGraph, airport)
     indegree = gr.indegree(MainGraph, airport)
     outdegree = gr.outdegree(MainGraph, airport)
+    secondary_degree = lt.size(secondary_affected)
 
     affected = getUnrepeatedREQ5(in_affected, out_affected)
 
     removeVertexREQ5(analyzer, airport, in_affected, out_affected)
     
-    return affected, indegree, outdegree
+    return affected, indegree, outdegree, secondary_degree
 
