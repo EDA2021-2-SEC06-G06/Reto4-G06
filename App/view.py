@@ -270,10 +270,7 @@ while True:
         print("\n=============== Requerimiento Número 2 ===============")
         print("Tiempo de ejecución: " + str(running_time) + " milisegundos")
 
-        printReq2(analyzer, airport1, airport2, num_clusters, same_cluster)
-        print("\nNúmero de clusters: " + str(num_clusters))
-        print("¿" + airport1 + " y " + airport2 + " pertenecen al mismo cluster? " + str(same_cluster))
-        
+        printReq2(analyzer, airport1, airport2, num_clusters, same_cluster)    
 
 
 
@@ -337,8 +334,8 @@ while True:
         opcion5 = input("Digite 1 si así lo desea, o 0 de lo contrario: ")
 
         if opcion5=="1":
-            printGraphsInfo(analyzer)
-        
+            printGraphsInfo(analyzer)    
+
 
 
     else:

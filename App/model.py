@@ -21,6 +21,7 @@ from DISClib.Algorithms.Graphs import dfo
 from DISClib.Algorithms.Graphs import dfs
 from DISClib.Algorithms.Graphs import scc
 from DISClib.Algorithms.Graphs import dijsktra as djk
+from DISClib.DataStructures import edge as e
 assert cf
 
 
@@ -268,12 +269,11 @@ def REQ1(analyzer):
 
         pos1+=1
 
-    
     DataInOrder = re.inorder(TreeWAirports)
     return NumberOfAirports, DataInOrder
 
-def DataREQ1(verticeAtTheMoment, analyzer, Connections):
 
+def DataREQ1(verticeAtTheMoment, analyzer, Connections):
     AirportsMap = analyzer["AirportsMap"]                    #Se agregan los datos necesarios
     DataList = lt.newList("ARRAY_LIST")
     EntryData = mp.get(AirportsMap, verticeAtTheMoment)               
@@ -304,6 +304,7 @@ def DatatreeREQ1(TreeWAirports, Connection, DataList):
 
 #Requerimiento 2
 
+#Requerimiento 2
 def REQ2(analyzer, airport1, airport2):
     MainGraph = analyzer["MainGraph"]
     kosaraju_scc = scc.KosarajuSCC(MainGraph)
@@ -326,9 +327,7 @@ def homonymsREQ3(analyzer, city1, city2):
     return homonyms_map
 
 
-
 def calculateRangeREQ3(lon_low, lon_high, lat_low, lat_high):
-    
     lon_low = lon_low - 5
     lon_high = lon_high + 5
     lat_low = lat_low - 5
@@ -338,7 +337,6 @@ def calculateRangeREQ3(lon_low, lon_high, lat_low, lat_high):
 
 
 def findNearestAirportREQ3(analyzer, city):
-
     LongitudeTree = analyzer["CoordinateTreeReq3"]
     city_longitude = city["longitude"]
     city_latitude = city["latitude"]
@@ -392,14 +390,15 @@ def REQ3(analyzer, origin_city, destination_city):
 
     return total_distance, path, origin_airport, destination_airport
 
-#Requerimiento  4
 
+#Requerimiento  4
 def REQ4(analyzer, Origin, miles):
     MainGraph = analyzer["MainGraph"]
     MSTMainGraph = pr.PrimMST(MainGraph)
     NumEdges = gr.numEdges(MSTMainGraph)
     c=1
     return NumEdges
+
 
 #Requerimiento 5
 def getUnrepeatedREQ5(in_affected, out_affected):
@@ -427,11 +426,70 @@ def getUnrepeatedREQ5(in_affected, out_affected):
     return affected
 
 
-def removeVertexREQ5(analyzer, airport):
+def removeEdgeREQ5(graph, vertexa, vertexb):
+    """
+    Elimina el arco asociado a los vertices vertexa ---- vertexb
+
+    Args:
+        graph: El grafo sobre el que se ejecuta la operacion
+        vertexa: Vertice de inicio
+        vertexb: Vertice destino
+
+    Raises:
+        Exception
+    """
+    try:
+        element = mp.get(graph['vertices'], vertexa)
+        lst = element['value']
+        i = 1
+        lst_size = lt.size(lst)
+
+        while i<=lst_size: #E recorridos en el peor caso
+            edge = lt.getElement(lst, i)
+            if (graph['directed']):
+                if (e.either(edge) == vertexa) and ((e.other(edge, e.either(edge)) == vertexb)):
+                    lt.deleteElement(lst, i) #E recorridos en el peor caso
+                    break
+
+            elif(e.either(edge) == vertexa or (e.other(edge, e.either(edge)) == vertexa)):
+                if (e.either(edge) == vertexb or
+                   (e.other(edge, e.either(edge)) == vertexb)):
+                    lt.deleteElement(lst, i) #E recorridos en el peor caso
+                    break
+            i+=1
+        graph["edges"] -= 1
+        
+    except Exception as exp:
+        error.reraise(exp, 'ajlist:getedge')
+
+
+def removeVertexREQ5(analyzer, airport, in_affected, out_affected):
     MainGraph = analyzer["MainGraph"]
-    ReversedMainGraph = analyzer["ReversedMainGraphReq5"]
-    affected_in_routes = gr.adjacentEdges(ReversedMainGraph, airport)
-    affected_out_routes = gr.adjacentEdges(MainGraph, airport)
+    SecondaryGraph = analyzer["SecondaryGraph"]
+    num_in = lt.size(in_affected)
+    num_out = lt.size(out_affected)
+
+    #Eliminar el vértice y todas las rutas que salen de él
+    mp.remove(MainGraph["vertices"], airport) #Cte porque la lista 'table' es un arreglo
+    mp.remove(SecondaryGraph["vertices"], airport)
+    MainGraph["edges"] -= num_out
+
+    #Ajustar los indegree en el digrafo
+    mp.remove(MainGraph["indegree"], airport)
+    pos_out = 1
+    while pos_out<=num_out: #V recorridos en el peor caso
+        out_airport = lt.getElement(out_affected, pos_out)
+        actual_indegree = me.getValue(mp.get(MainGraph["indegree"], out_airport))
+        mp.put(MainGraph["indegree"], out_airport, actual_indegree-1)
+        pos_out += 1
+
+    #Eliminar las rutas que llegan al vértice desde los demás vértices
+    pos_in = 1
+    while pos_in <= num_in: #V recorridos en el peor caso
+        in_airport = lt.getElement(in_affected, pos_in)
+        removeEdgeREQ5(MainGraph, in_airport, airport) #E^2 recorridos en el peor caso
+        removeEdgeREQ5(SecondaryGraph, in_airport, airport) #E^2 recorridos en el peor caso
+        pos_in += 1
 
 
 def REQ5(analyzer, airport):
@@ -445,5 +503,7 @@ def REQ5(analyzer, airport):
 
     affected = getUnrepeatedREQ5(in_affected, out_affected)
 
+    removeVertexREQ5(analyzer, airport, in_affected, out_affected)
+    
     return affected, indegree, outdegree
 
