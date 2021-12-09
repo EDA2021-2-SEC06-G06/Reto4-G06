@@ -208,13 +208,15 @@ while True:
     elif int(inputs) == 10:
 
         start_time = process_time()
-        #req1 = controller.REQ1(catalog)
+        NumberOfAirports, DataInOrder = controller.REQ1(analyzer)
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
 
-        print("\n=============== Requerimiento Número 1 ===============")
-        #print("Tiempo de ejecución: " + str(running_time) + " milisegundos")
 
+        print("\n\n=============== Requerimiento Número 1 ===============")
+        print("Tiempo de ejecución: " + str(running_time) + " milisegundos")
+        print("Hay "+str(NumberOfAirports)+" aeropuertos interconectados")
+        print(DataInOrder)
 
 
     #Requerimiento 2
@@ -232,7 +234,7 @@ while True:
         print("\n=============== Requerimiento Número 2 ===============")
         print("Tiempo de ejecución: " + str(running_time) + " milisegundos")
 
-        printReq2(analyzer, airport1, airport2, num_clusters, same_cluster)
+        printReq2(analyzer, airport1, airport2, num_clusters, same_cluster)    
 
 
 
@@ -262,9 +264,12 @@ while True:
 
     #Requerimiento 4
     elif int(inputs) == 40:
+        
+        Origin = input("Ingrese el nombre de la ciudad de origen: ")
+        miles = input("Ingrese la cantidad de millas disponibles: ")
 
         start_time = process_time()
-        #req4 = controller.REQ4(catalog)
+        req4 = controller.REQ4(analyzer, Origin, miles)
         stop_time = process_time()
         running_time = (stop_time - start_time)*1000
 

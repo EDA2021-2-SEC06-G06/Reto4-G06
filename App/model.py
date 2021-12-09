@@ -7,14 +7,16 @@ Daniel Hernández Pineda
 """
 
 
+
 import config as cf
 from DISClib.Utils import error as error
 from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
 from DISClib.ADT import orderedmap as om
+from DISClib.Algorithms.Graphs import prim as pr
 from DISClib.DataStructures import mapentry as me
+from DISClib.Algorithms.Trees import traversal as re
 from DISClib.ADT import graph as gr
-from DISClib.Algorithms.Graphs import dfs
 from DISClib.Algorithms.Graphs import scc
 from DISClib.Algorithms.Graphs import dijsktra as djk
 from DISClib.DataStructures import edge as e
@@ -106,26 +108,6 @@ def AddCity(analyzer, city):
 
 def CreateReversedMainGraphREQ5(analyzer):
     analyzer["ReversedMainGraphReq5"] = scc.reverseGraph(analyzer["MainGraph"])
-
-
-def AddRouteND(analyzer, route):
-    """
-    Se añade la ruta como un arco entre sus aeropuertos correspondientes
-    """ 
-    pos=1
-    MainGraph = analyzer["MainGraph"]   
-    SecondaryGraph = analyzer["SecondaryGraph"]
-    sizeEdges= gr.numEdges(MainGraph)
-    Vertices=gr.vertices(MainGraph)
-    SizeVertices=lt.size(Vertices)
-    while pos<=SizeVertices:
-        MapOfJointVertices= mp.newMap()
-        Vertice= lt.getElement(Vertices, pos)
-        dfs.dfsVertex(MapOfJointVertices, MainGraph, Vertice)
-        pos+=1
-        cat=1
-    Gau=dfs.DepthFirstSearch(MainGraph,"AAE")
-    miaau=1
 
 
 
@@ -246,6 +228,62 @@ def cityData(city):
 # Funciones de consulta
 # ==============================================
 
+#Requerimiento 1
+def REQ1(analyzer):
+    pos1=1
+    
+    NumberOfAirports = 0
+    TreeWAirports = om.newMap(omaptype="RBT")
+    MainGraph = analyzer["MainGraph"]
+    vertices1 = gr.vertices(MainGraph)          #Se sacan los veertices del grafo
+    sizeVertices1 = lt.size(vertices1)
+    
+    while pos1<=sizeVertices1:
+        verticeAtTheMoment = lt.getElement(vertices1, pos1)
+        verticesoutdegree = gr.outdegree(MainGraph, verticeAtTheMoment)
+        verticesindegree = gr.indegree(MainGraph, verticeAtTheMoment)          #Se encuentra el numero de arcos que entran y saen en cada nodo
+            
+        if verticesindegree>0 and verticesoutdegree>0:                        #Se encuentran los vertices interconectados del grafo no dirigido
+            NumberOfAirports +=1
+            Connections = verticesoutdegree+verticesindegree
+            DataList = DataREQ1(verticeAtTheMoment, analyzer, Connections)
+            om.put(TreeWAirports, Connections, DataList)
+
+        if verticesoutdegree>0 and verticesindegree==0:                           #Se encuentran los verces del grafo dirigido
+            NumberOfAirports+=1
+            DataList = DataREQ1(verticeAtTheMoment, analyzer, verticesoutdegree)
+            om.put(TreeWAirports, verticesoutdegree, DataList)
+
+        if verticesindegree>0 and verticesoutdegree==0:
+            NumberOfAirports+=1
+            DataList = DataREQ1(verticeAtTheMoment, analyzer, verticesindegree)
+            om.put(TreeWAirports, verticesindegree, DataList)
+
+        pos1+=1
+
+    DataInOrder = re.inorder(TreeWAirports)
+    return NumberOfAirports, DataInOrder
+
+
+def DataREQ1(verticeAtTheMoment, analyzer, Connections):
+    AirportsMap = analyzer["AirportsMap"]                    #Se agregan los datos necesarios
+    DataList = lt.newList("ARRAY_LIST")
+    EntryData = mp.get(AirportsMap, verticeAtTheMoment)               
+    Data = me.getValue(EntryData)
+    EntryName = mp.get(Data, "Name")
+    Name = me.getValue(EntryName)
+    EntryCity = mp.get(Data, "City")
+    City = me.getValue(EntryCity)
+    EntryCountry = mp.get(Data, "Country")
+    Country = me.getValue(EntryCountry)
+    lt.addLast(DataList, Connections)
+    lt.addLast(DataList, verticeAtTheMoment)
+    lt.addLast(DataList, Name)
+    lt.addLast(DataList, City)
+    lt.addLast(DataList, Country)
+    return DataList
+
+
 #Requerimiento 2
 def REQ2(analyzer, airport1, airport2):
     MainGraph = analyzer["MainGraph"]
@@ -270,7 +308,6 @@ def homonymsREQ3(analyzer, city1, city2):
 
 
 def calculateRangeREQ3(lon_low, lon_high, lat_low, lat_high):
-    
     lon_low = lon_low - 5
     lon_high = lon_high + 5
     lat_low = lat_low - 5
@@ -280,7 +317,6 @@ def calculateRangeREQ3(lon_low, lon_high, lat_low, lat_high):
 
 
 def findNearestAirportREQ3(analyzer, city):
-
     LongitudeTree = analyzer["CoordinateTreeReq3"]
     city_longitude = city["longitude"]
     city_latitude = city["latitude"]
@@ -333,6 +369,15 @@ def REQ3(analyzer, origin_city, destination_city):
     total_distance = round(origin_airport_distance + destination_airport_distance + distance_between_airports,3)
 
     return total_distance, path, origin_airport, destination_airport
+
+
+#Requerimiento  4
+def REQ4(analyzer, Origin, miles):
+    MainGraph = analyzer["MainGraph"]
+    MSTMainGraph = pr.PrimMST(MainGraph)
+    NumEdges = gr.numEdges(MSTMainGraph)
+    c=1
+    return NumEdges
 
 
 #Requerimiento 5
